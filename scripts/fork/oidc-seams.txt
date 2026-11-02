@@ -1,0 +1,7 @@
+packages/twenty-server/src/engine/core-modules/core-engine.module.ts
+packages/twenty-server/src/engine/core-modules/auth/auth.module.ts
+packages/twenty-server/src/database/commands/secret-encryption-rotation/constants/secret-encryption-rotation-site-entries.constant.ts
+packages/twenty-front/src/modules/settings/security/components/SettingsSecuritySettings.tsx
+packages/twenty-front/src/modules/auth/sign-in-up/components/SignInUpWorkspaceScopeForm.tsx
+packages/twenty-front/src/modules/auth/sign-in-up/components/internal/SignInUpWorkspaceScopeFormEffect.tsx
+packages/twenty-front/src/modules/auth/sign-in-up/hooks/useHasMultipleAuthMethods.ts
