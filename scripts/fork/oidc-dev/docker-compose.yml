@@ -1,0 +1,8 @@
+services:
+  mock-idp:
+    image: ghcr.io/navikt/mock-oauth2-server@sha256:647dd8c78a54f0e6fcd58d79c884e612f8f998a0662276f3e1db22e464a50192
+    ports:
+      - "127.0.0.1:8085:8080"
+    environment:
+      SERVER_PORT: "8080"
+      JSON_CONFIG: '{"interactiveLogin": true}'
