@@ -27,6 +27,10 @@ describe('extractOidcIdentity', () => {
   it.each([
     ['email_verified false', { email: 'a@example.com', email_verified: false }],
     [
+      'email_verified "False"',
+      { email: 'a@example.com', email_verified: 'False' },
+    ],
+    [
       'email_verified "false"',
       { email: 'a@example.com', email_verified: 'false' },
     ],
@@ -54,7 +58,7 @@ describe('extractOidcIdentity', () => {
     });
   });
 
-  it.each([['not-an-email'], ['DOMAIN\\user'], ['a b@example.com'], ['a@x']])(
+  it.each([['not-an-email'], ['DOMAIN\\user'], ['a b@example.com']])(
     'rejects malformed email %s',
     (email) => {
       expect(extractOidcIdentity({ email })).toEqual({

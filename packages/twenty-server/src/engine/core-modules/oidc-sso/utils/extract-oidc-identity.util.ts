@@ -1,5 +1,5 @@
-import { isEmail } from 'class-validator';
 import { isNonEmptyString, isString } from '@sniptt/guards';
+import { emailSchema } from 'twenty-shared/utils';
 
 export type OidcIdentity = {
   email: string;
@@ -26,7 +26,7 @@ const readTrimmedString = (value: unknown): string | null => {
 
 // Some IdPs (e.g. Cognito) send booleans as strings.
 const isExplicitlyFalse = (value: unknown): boolean =>
-  value === false || value === 'false';
+  value === false || (isString(value) && value.toLowerCase() === 'false');
 
 export const extractOidcIdentity = (
   claims: Record<string, unknown>,
@@ -43,7 +43,7 @@ export const extractOidcIdentity = (
     return { status: 'rejected', reason: 'email-not-verified' };
   }
 
-  if (!isEmail(email)) {
+  if (!emailSchema.safeParse(email).success) {
     return { status: 'rejected', reason: 'email-invalid' };
   }
 

@@ -27,6 +27,8 @@ describe('normalizeOidcIssuer', () => {
     ['https://user:pass@idp.example.com'],
     ['https://idp.example.com?x=1'],
     ['https://idp.example.com#frag'],
+    ['https://idp.example.com/?'],
+    ['https://idp.example.com/#'],
   ])('rejects %j', (rawIssuer) => {
     expect(normalizeOidcIssuer(rawIssuer)).toBeNull();
   });
