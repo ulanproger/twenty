@@ -7,6 +7,7 @@ import { ApplicationRegistrationVariableEntity } from 'src/engine/core-modules/a
 import { ApplicationVariableEntity } from 'src/engine/core-modules/application/application-variable/application-variable.entity';
 import { UserApplicationVariableValueEntity } from 'src/engine/core-modules/application/application-variable/user-application-variable-value.entity';
 import { SigningKeyEntity } from 'src/engine/core-modules/jwt/entities/signing-key.entity';
+import { WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
 import { type ExtractEncryptedColumns } from 'src/engine/core-modules/secret-encryption/branded-strings/extract-encrypted-columns.type';
 import { TwoFactorAuthenticationMethodEntity } from 'src/engine/core-modules/two-factor-authentication/entities/two-factor-authentication-method.entity';
 import { ConnectedAccountEntity } from 'src/engine/metadata-modules/connected-account/entities/connected-account.entity';
@@ -125,6 +126,18 @@ export const SECRET_ENCRYPTION_ROTATION_SITE_ENTRIES = defineRotationRegistry({
         isWorkspaceScoped: true,
         extraWhere: undefined,
         workspaceCacheKeyNames: ['userApplicationVariableValueMaps'],
+      },
+    },
+  },
+  WorkspaceOidcProviderEntity: {
+    entity: WorkspaceOidcProviderEntity,
+    columnSiteNames: {
+      clientSecret: {
+        siteName: 'oidc-provider-client-secret',
+        customHandler: undefined,
+        isWorkspaceScoped: true,
+        extraWhere: undefined,
+        workspaceCacheKeyNames: [],
       },
     },
   },
