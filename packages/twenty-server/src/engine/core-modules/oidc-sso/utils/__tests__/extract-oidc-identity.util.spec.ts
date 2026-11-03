@@ -40,7 +40,7 @@ describe('extractOidcIdentity', () => {
   it.each([
     ['no claims', {}],
     [
-      'empty email that is also unverified',
+      'empty email even when also unverified (missing is checked first)',
       { email: '', email_verified: false },
     ],
     ['empty email', { email: '', ...VERIFIED }],

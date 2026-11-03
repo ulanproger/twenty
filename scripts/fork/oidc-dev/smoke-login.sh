@@ -79,7 +79,8 @@ set_provider_status() {
     "UPDATE core.\"workspaceOidcProvider\" SET status = '$1' WHERE id = '$PROVIDER_ID'" >/dev/null
 }
 
-# The sign-in only accepts an email the IdP marks as verified.
+# The sign-in only accepts an email the IdP marks as verified, so this always adds
+# email_verified:true. The negative cases below are written out for that reason.
 claims_for() { printf '{"email":"%s","email_verified":true%s}' "$1" "${2:+,$2}"; }
 
 EXISTING_CLAIMS=$(claims_for "$EXISTING_EMAIL" '"given_name":"Aaron"')

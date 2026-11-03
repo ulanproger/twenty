@@ -499,10 +499,13 @@ describe('OidcSsoAuthController', () => {
     });
 
     it.each([
-      ['unverified', { email: 'ada@example.com', email_verified: false }],
-      ['without an email_verified claim', { email: 'ada@example.com' }],
+      [
+        'email_verified is false',
+        { email: 'ada@example.com', email_verified: false },
+      ],
+      ['email_verified is missing', { email: 'ada@example.com' }],
     ])(
-      'rejects an email that is %s after the exchange, without signing in',
+      'does not sign in when the identity is rejected (%s)',
       async (_label, claims) => {
         const {
           controller,
