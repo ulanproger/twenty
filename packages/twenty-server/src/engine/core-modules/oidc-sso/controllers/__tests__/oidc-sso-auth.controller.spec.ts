@@ -16,6 +16,7 @@ import { type OidcProviderService } from 'src/engine/core-modules/oidc-sso/servi
 const WORKSPACE = { id: 'workspace-a', subdomain: 'acme' };
 const SIGNED_IN_URL = 'https://acme.example.com/verify?loginToken=token';
 const GENERIC_FAILURE_MESSAGE = 'Single sign-on authentication failed';
+const ERROR_REDIRECT_URL = 'https://app.example.com/verify?errorMessage=failed';
 const CALLBACK_URL = '/auth/oidc-sso/callback?code=code-1&state=state-1';
 
 const buildProvider = (overrides: Record<string, unknown> = {}) => ({
@@ -62,7 +63,7 @@ const buildController = ({
   const guardRedirectService = {
     getRedirectErrorUrlAndCaptureExceptions: jest
       .fn()
-      .mockReturnValue('https://app.example.com/verify?errorMessage=failed'),
+      .mockReturnValue(ERROR_REDIRECT_URL),
   };
   const workspaceDomainsService = {
     getSubdomainAndCustomDomainFromWorkspaceFallbackOnDefaultSubdomain: jest
@@ -119,8 +120,10 @@ const getRedirectedFailure = (
 };
 
 describe('OidcSsoAuthController', () => {
+  let warnSpy: jest.SpyInstance;
+
   beforeEach(() => {
-    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
   });
 
   afterEach(() => {
@@ -188,8 +191,62 @@ describe('OidcSsoAuthController', () => {
 
       expect(oidcProtocolService.startAuthorization).not.toHaveBeenCalled();
       expect(http.session.save).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Workspace invite hash is too long'),
+      );
       expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
         AuthExceptionCode.SSO_AUTH_FAILED,
+      );
+    });
+
+    it('does not store a repeated or empty invite hash', async () => {
+      const { controller } = buildController();
+
+      for (const workspaceInviteHash of [['a', 'b'], ''] as unknown[]) {
+        const http = buildRequestAndResponse();
+
+        await controller.login(
+          'provider-1',
+          workspaceInviteHash,
+          http.request as never,
+          http.response as never,
+        );
+
+        expect(http.session.oidcLogins).toEqual([
+          expect.objectContaining({ workspaceInviteHash: null }),
+        ]);
+      }
+    });
+
+    it('keeps only the five newest logins of the session', async () => {
+      const { controller } = buildController();
+      const existingLogins = [1, 2, 3, 4, 5].map((index) =>
+        buildStoredLogin({ state: `old-${index}` }),
+      );
+      const http = buildRequestAndResponse(existingLogins);
+
+      await login(controller, undefined, http);
+
+      expect(http.session.oidcLogins).toEqual([
+        ...existingLogins.slice(1),
+        expect.objectContaining({ state: 'state-1' }),
+      ]);
+    });
+
+    it('does not redirect to the IdP when the session cannot be saved', async () => {
+      const { controller, guardRedirectService } = buildController();
+      const http = buildRequestAndResponse();
+
+      http.session.save.mockImplementation((callback) =>
+        callback(new Error('redis down')),
+      );
+
+      await login(controller, undefined, http);
+
+      expect(http.response.redirect).toHaveBeenCalledTimes(1);
+      expect(http.response.redirect).toHaveBeenCalledWith(ERROR_REDIRECT_URL);
+      expect(getRedirectedFailure(guardRedirectService).error.message).toBe(
+        GENERIC_FAILURE_MESSAGE,
       );
     });
 
@@ -247,7 +304,8 @@ describe('OidcSsoAuthController', () => {
         oidcAccountService,
         oidcProviderService,
       } = buildController({ claims });
-      const http = buildRequestAndResponse([buildStoredLogin()]);
+      const storedLogin = buildStoredLogin();
+      const http = buildRequestAndResponse([storedLogin]);
 
       await callback(controller, http);
 
@@ -258,11 +316,7 @@ describe('OidcSsoAuthController', () => {
         provider: expect.objectContaining({ id: 'provider-1' }),
         plaintextSecret: 'plaintext-secret',
         requestUrl: CALLBACK_URL,
-        login: expect.objectContaining({
-          state: 'state-1',
-          nonce: 'nonce-1',
-          codeVerifier: 'verifier-1',
-        }),
+        login: storedLogin,
       });
       expect(oidcAccountService.signIn).toHaveBeenCalledWith({
         provider: expect.objectContaining({ id: 'provider-1' }),
@@ -282,6 +336,50 @@ describe('OidcSsoAuthController', () => {
       expect(http.session.oidcLogins).toEqual([]);
       expect(http.session.save.mock.invocationCallOrder[0]).toBeLessThan(
         oidcProtocolService.exchangeCode.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('leaves the other pending logins of the session alone', async () => {
+      const { controller } = buildController();
+      const otherLogin = buildStoredLogin({ state: 'other-tab' });
+      const http = buildRequestAndResponse([buildStoredLogin(), otherLogin]);
+
+      await callback(controller, http);
+
+      expect(http.session.oidcLogins).toEqual([otherLogin]);
+    });
+
+    it('does not exchange the code when the session cannot be saved', async () => {
+      const { controller, oidcProtocolService, guardRedirectService } =
+        buildController();
+      const http = buildRequestAndResponse([buildStoredLogin()]);
+
+      http.session.save.mockImplementation((saveCallback) =>
+        saveCallback(new Error('redis down')),
+      );
+
+      await callback(controller, http);
+
+      expect(oidcProtocolService.exchangeCode).not.toHaveBeenCalled();
+      expect(getRedirectedFailure(guardRedirectService).error.message).toBe(
+        GENERIC_FAILURE_MESSAGE,
+      );
+    });
+
+    it('treats a repeated state parameter as an unknown state', async () => {
+      const { controller, oidcProtocolService, guardRedirectService } =
+        buildController();
+      const http = buildRequestAndResponse([buildStoredLogin()]);
+
+      await controller.callback(
+        ['state-1', 'state-1'],
+        http.request as never,
+        http.response as never,
+      );
+
+      expect(oidcProtocolService.exchangeCode).not.toHaveBeenCalled();
+      expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
+        AuthExceptionCode.SSO_AUTH_FAILED,
       );
     });
 
@@ -323,6 +421,7 @@ describe('OidcSsoAuthController', () => {
     it('does not touch the session or the IdP for an unknown state', async () => {
       const {
         controller,
+        workspaceDomainsService,
         oidcProviderService,
         oidcProtocolService,
         guardRedirectService,
@@ -331,6 +430,9 @@ describe('OidcSsoAuthController', () => {
 
       await callback(controller, http, 'other-state');
 
+      expect(
+        workspaceDomainsService.getSubdomainAndCustomDomainFromWorkspaceFallbackOnDefaultSubdomain,
+      ).toHaveBeenCalledWith(undefined);
       expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
         AuthExceptionCode.SSO_AUTH_FAILED,
       );
@@ -407,22 +509,41 @@ describe('OidcSsoAuthController', () => {
 
       expect(oidcProtocolService.exchangeCode).toHaveBeenCalledTimes(1);
       expect(oidcAccountService.signIn).not.toHaveBeenCalled();
-      expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
-        AuthExceptionCode.SSO_AUTH_FAILED,
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('OIDC identity rejected'),
       );
+
+      const { error } = getRedirectedFailure(guardRedirectService);
+
+      expect(error.code).toBe(AuthExceptionCode.SSO_AUTH_FAILED);
+      expect(error.message).toBe(GENERIC_FAILURE_MESSAGE);
     });
 
     it('replaces the message of an IdP library error with the generic failure', async () => {
-      const { controller, oidcProtocolService, guardRedirectService } =
-        buildController();
+      const {
+        controller,
+        oidcProtocolService,
+        guardRedirectService,
+        workspaceDomainsService,
+      } = buildController();
 
       oidcProtocolService.exchangeCode.mockRejectedValue(
         new Error('state mismatch: expected state-1'),
       );
 
-      await callback(controller, buildRequestAndResponse([buildStoredLogin()]));
+      const http = buildRequestAndResponse([buildStoredLogin()]);
+
+      await callback(controller, http);
 
       const { error, pathname } = getRedirectedFailure(guardRedirectService);
+
+      expect(http.response.redirect).toHaveBeenCalledWith(ERROR_REDIRECT_URL);
+      expect(
+        workspaceDomainsService.getSubdomainAndCustomDomainFromWorkspaceFallbackOnDefaultSubdomain,
+      ).toHaveBeenCalledWith(WORKSPACE);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('state mismatch: expected state-1'),
+      );
 
       expect(error).toBeInstanceOf(AuthException);
       expect(error.code).toBe(AuthExceptionCode.SSO_AUTH_FAILED);
