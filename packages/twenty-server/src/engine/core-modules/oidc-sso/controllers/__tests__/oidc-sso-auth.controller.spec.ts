@@ -1,3 +1,7 @@
+import { Logger } from '@nestjs/common';
+
+import { AppPath } from 'twenty-shared/types';
+
 import {
   AuthException,
   AuthExceptionCode,
@@ -10,6 +14,9 @@ import { type OidcProtocolService } from 'src/engine/core-modules/oidc-sso/servi
 import { type OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 
 const WORKSPACE = { id: 'workspace-a', subdomain: 'acme' };
+const SIGNED_IN_URL = 'https://acme.example.com/verify?loginToken=token';
+const GENERIC_FAILURE_MESSAGE = 'Single sign-on authentication failed';
+const CALLBACK_URL = '/auth/oidc-sso/callback?code=code-1&state=state-1';
 
 const buildProvider = (overrides: Record<string, unknown> = {}) => ({
   id: 'provider-1',
@@ -30,9 +37,12 @@ const buildStoredLogin = (overrides: Record<string, unknown> = {}) => ({
 });
 
 const buildController = ({
-  provider = buildProvider() as unknown,
-  claims = { email: 'ada@example.com' } as Record<string, unknown>,
-}: { provider?: unknown; claims?: Record<string, unknown> } = {}) => {
+  provider = buildProvider(),
+  claims = { email: 'ada@example.com' },
+}: {
+  provider?: ReturnType<typeof buildProvider> | null;
+  claims?: Record<string, unknown>;
+} = {}) => {
   const oidcProviderService = {
     findByIdWithWorkspace: jest.fn().mockResolvedValue(provider),
     decryptClientSecret: jest.fn().mockReturnValue('plaintext-secret'),
@@ -47,23 +57,17 @@ const buildController = ({
     exchangeCode: jest.fn().mockResolvedValue(claims),
   };
   const oidcAccountService = {
-    signIn: jest
-      .fn()
-      .mockResolvedValue('https://acme.example.com/verify?loginToken=token'),
+    signIn: jest.fn().mockResolvedValue(SIGNED_IN_URL),
   };
   const guardRedirectService = {
-    getRedirectErrorUrlAndCaptureExceptions: jest.fn(
-      ({ error }: { error: AuthException }) =>
-        `https://app.example.com/verify?errorCode=${error.code}`,
-    ),
+    getRedirectErrorUrlAndCaptureExceptions: jest
+      .fn()
+      .mockReturnValue('https://app.example.com/verify?errorMessage=failed'),
   };
   const workspaceDomainsService = {
-    getSubdomainAndCustomDomainFromWorkspaceFallbackOnDefaultSubdomain: jest.fn(
-      (workspace?: { subdomain: string }) => ({
-        subdomain: workspace?.subdomain ?? 'default',
-        customDomain: null,
-      }),
-    ),
+    getSubdomainAndCustomDomainFromWorkspaceFallbackOnDefaultSubdomain: jest
+      .fn()
+      .mockReturnValue({ subdomain: 'acme', customDomain: null }),
   };
 
   return {
@@ -87,234 +91,360 @@ const buildRequestAndResponse = (oidcLogins?: unknown[]) => {
     oidcLogins,
     save: jest.fn((callback: (error?: Error) => void) => callback()),
   };
+  const response = { redirect: jest.fn() };
 
   return {
     session,
-    request: {
-      session,
-      originalUrl: '/auth/oidc-sso/callback?code=code-1&state=state-1',
-    } as never,
-    response: { redirect: jest.fn() } as never,
-    redirect: (response: never) =>
-      (response as { redirect: jest.Mock }).redirect,
+    response,
+    request: { session, originalUrl: CALLBACK_URL },
   };
 };
 
-const errorCodeRedirected = (redirect: jest.Mock) =>
-  new URL(redirect.mock.calls[0][0]).searchParams.get('errorCode');
+// The controller passes the failure to the guard service, which builds the real URL.
+const getRedirectedFailure = (
+  guardRedirectService: ReturnType<
+    typeof buildController
+  >['guardRedirectService'],
+) => {
+  const { calls } =
+    guardRedirectService.getRedirectErrorUrlAndCaptureExceptions.mock;
+
+  expect(calls).toHaveLength(1);
+
+  return calls[0][0] as {
+    error: AuthException;
+    pathname: string;
+    workspace: unknown;
+  };
+};
 
 describe('OidcSsoAuthController', () => {
+  beforeEach(() => {
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('login', () => {
+    const login = (
+      controller: OidcSsoAuthController,
+      workspaceInviteHash: string | undefined,
+      { request, response }: ReturnType<typeof buildRequestAndResponse>,
+    ) =>
+      controller.login(
+        'provider-1',
+        workspaceInviteHash,
+        request as never,
+        response as never,
+      );
+
     it('stores the login in the session before redirecting to the IdP', async () => {
       const { controller, oidcProtocolService } = buildController();
-      const { request, response, session, redirect } =
-        buildRequestAndResponse();
+      const http = buildRequestAndResponse();
 
-      await controller.login('provider-1', undefined, request, response);
+      await login(controller, undefined, http);
 
       expect(oidcProtocolService.startAuthorization).toHaveBeenCalledWith({
         provider: expect.objectContaining({ id: 'provider-1' }),
         plaintextSecret: 'plaintext-secret',
       });
-      expect(session.oidcLogins).toEqual([
+      expect(http.session.oidcLogins).toEqual([
         expect.objectContaining({
           state: 'state-1',
+          nonce: 'nonce-1',
+          codeVerifier: 'verifier-1',
           providerId: 'provider-1',
           workspaceInviteHash: null,
         }),
       ]);
-      expect(redirect(response)).toHaveBeenCalledWith(
+      expect(http.response.redirect).toHaveBeenCalledWith(
         'https://idp.example.com/auth?state=state-1',
       );
-      expect(session.save.mock.invocationCallOrder[0]).toBeLessThan(
-        redirect(response).mock.invocationCallOrder[0],
+      expect(http.session.save.mock.invocationCallOrder[0]).toBeLessThan(
+        http.response.redirect.mock.invocationCallOrder[0],
       );
     });
 
-    it('keeps the invite hash of the login', async () => {
+    it('keeps the invite hash of the login, up to the length cap', async () => {
       const { controller } = buildController();
-      const { request, response, session } = buildRequestAndResponse();
+      const http = buildRequestAndResponse();
+      const longestAllowedHash = 'x'.repeat(255);
 
-      await controller.login('provider-1', 'invite-hash', request, response);
+      await login(controller, longestAllowedHash, http);
 
-      expect(session.oidcLogins).toEqual([
-        expect.objectContaining({ workspaceInviteHash: 'invite-hash' }),
+      expect(http.session.oidcLogins).toEqual([
+        expect.objectContaining({ workspaceInviteHash: longestAllowedHash }),
       ]);
     });
 
-    it('rejects an unknown provider and redirects to the default workspace', async () => {
-      const { controller, workspaceDomainsService, oidcProtocolService } =
-        buildController({ provider: null });
-      const { request, response, redirect } = buildRequestAndResponse();
+    it('rejects an invite hash that is one character too long', async () => {
+      const { controller, oidcProtocolService, guardRedirectService } =
+        buildController();
+      const http = buildRequestAndResponse();
 
-      await controller.login('provider-1', undefined, request, response);
+      await login(controller, 'x'.repeat(256), http);
 
-      expect(errorCodeRedirected(redirect(response))).toBe('SSO_AUTH_FAILED');
+      expect(oidcProtocolService.startAuthorization).not.toHaveBeenCalled();
+      expect(http.session.save).not.toHaveBeenCalled();
+      expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
+        AuthExceptionCode.SSO_AUTH_FAILED,
+      );
+    });
+
+    it('rejects an unknown provider and lets the domain service pick the default workspace', async () => {
+      const {
+        controller,
+        oidcProtocolService,
+        workspaceDomainsService,
+        guardRedirectService,
+      } = buildController({ provider: null });
+
+      await login(controller, undefined, buildRequestAndResponse());
+
+      expect(oidcProtocolService.startAuthorization).not.toHaveBeenCalled();
       expect(
         workspaceDomainsService.getSubdomainAndCustomDomainFromWorkspaceFallbackOnDefaultSubdomain,
       ).toHaveBeenCalledWith(undefined);
-      expect(oidcProtocolService.startAuthorization).not.toHaveBeenCalled();
+      expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
+        AuthExceptionCode.SSO_AUTH_FAILED,
+      );
     });
 
     it('rejects an inactive provider and redirects to its own workspace', async () => {
-      const { controller, workspaceDomainsService, oidcProtocolService } =
-        buildController({ provider: buildProvider({ status: 'inactive' }) });
-      const { request, response, redirect } = buildRequestAndResponse();
+      const {
+        controller,
+        oidcProtocolService,
+        workspaceDomainsService,
+        guardRedirectService,
+      } = buildController({ provider: buildProvider({ status: 'inactive' }) });
 
-      await controller.login('provider-1', undefined, request, response);
+      await login(controller, undefined, buildRequestAndResponse());
 
-      expect(errorCodeRedirected(redirect(response))).toBe('SSO_AUTH_FAILED');
+      expect(oidcProtocolService.startAuthorization).not.toHaveBeenCalled();
       expect(
         workspaceDomainsService.getSubdomainAndCustomDomainFromWorkspaceFallbackOnDefaultSubdomain,
       ).toHaveBeenCalledWith(WORKSPACE);
-      expect(oidcProtocolService.startAuthorization).not.toHaveBeenCalled();
-    });
-
-    it('rejects an invite hash that is too long for the session', async () => {
-      const { controller, oidcProtocolService } = buildController();
-      const { request, response, session, redirect } =
-        buildRequestAndResponse();
-
-      await controller.login('provider-1', 'x'.repeat(256), request, response);
-
-      expect(errorCodeRedirected(redirect(response))).toBe('SSO_AUTH_FAILED');
-      expect(oidcProtocolService.startAuthorization).not.toHaveBeenCalled();
-      expect(session.save).not.toHaveBeenCalled();
+      expect(getRedirectedFailure(guardRedirectService).pathname).toBe(
+        AppPath.Verify,
+      );
     });
   });
 
   describe('callback', () => {
-    it('saves the session before the code exchange and redirects to the signed-in url', async () => {
-      const { controller, oidcProtocolService, oidcAccountService } =
-        buildController();
-      const { request, response, session, redirect } = buildRequestAndResponse([
-        buildStoredLogin({ workspaceInviteHash: 'invite-hash' }),
-      ]);
+    const callback = (
+      controller: OidcSsoAuthController,
+      { request, response }: ReturnType<typeof buildRequestAndResponse>,
+      state = 'state-1',
+    ) => controller.callback(state, request as never, response as never);
 
-      await controller.callback('state-1', request, response);
+    it('passes the stored login to the code exchange and redirects to the signed-in url', async () => {
+      const claims = { email: 'ada@example.com', given_name: 'Ada' };
+      const {
+        controller,
+        oidcProtocolService,
+        oidcAccountService,
+        oidcProviderService,
+      } = buildController({ claims });
+      const http = buildRequestAndResponse([buildStoredLogin()]);
 
-      expect(session.oidcLogins).toEqual([]);
-      expect(session.save.mock.invocationCallOrder[0]).toBeLessThan(
+      await callback(controller, http);
+
+      expect(oidcProviderService.findByIdWithWorkspace).toHaveBeenCalledWith(
+        'provider-1',
+      );
+      expect(oidcProtocolService.exchangeCode).toHaveBeenCalledWith({
+        provider: expect.objectContaining({ id: 'provider-1' }),
+        plaintextSecret: 'plaintext-secret',
+        requestUrl: CALLBACK_URL,
+        login: expect.objectContaining({
+          state: 'state-1',
+          nonce: 'nonce-1',
+          codeVerifier: 'verifier-1',
+        }),
+      });
+      expect(oidcAccountService.signIn).toHaveBeenCalledWith({
+        provider: expect.objectContaining({ id: 'provider-1' }),
+        identity: expect.objectContaining({ email: 'ada@example.com' }),
+        claims,
+        workspaceInviteHash: undefined,
+      });
+      expect(http.response.redirect).toHaveBeenCalledWith(SIGNED_IN_URL);
+    });
+
+    it('saves the session without the login before the code exchange', async () => {
+      const { controller, oidcProtocolService } = buildController();
+      const http = buildRequestAndResponse([buildStoredLogin()]);
+
+      await callback(controller, http);
+
+      expect(http.session.oidcLogins).toEqual([]);
+      expect(http.session.save.mock.invocationCallOrder[0]).toBeLessThan(
         oidcProtocolService.exchangeCode.mock.invocationCallOrder[0],
-      );
-      expect(oidcAccountService.signIn).toHaveBeenCalledWith(
-        expect.objectContaining({ workspaceInviteHash: 'invite-hash' }),
-      );
-      expect(redirect(response)).toHaveBeenCalledWith(
-        'https://acme.example.com/verify?loginToken=token',
       );
     });
 
-    it('rejects a replayed callback', async () => {
-      const { controller, oidcProtocolService } = buildController();
-      const { request, response, redirect } = buildRequestAndResponse([
-        buildStoredLogin(),
+    it('hands the invite hash of the login to the sign-in', async () => {
+      const { controller, oidcAccountService } = buildController();
+      const http = buildRequestAndResponse([
+        buildStoredLogin({ workspaceInviteHash: 'invite-hash' }),
       ]);
 
-      await controller.callback('state-1', request, response);
-      await controller.callback('state-1', request, response);
+      await callback(controller, http);
 
-      const [firstRedirect, secondRedirect] = redirect(response).mock.calls.map(
-        ([url]: [string]) => url,
+      expect(oidcAccountService.signIn).toHaveBeenCalledWith(
+        expect.objectContaining({ workspaceInviteHash: 'invite-hash' }),
       );
+    });
 
-      expect(firstRedirect).toBe(
-        'https://acme.example.com/verify?loginToken=token',
-      );
-      expect(new URL(secondRedirect).searchParams.get('errorCode')).toBe(
-        'SSO_AUTH_FAILED',
+    it('rejects a replayed callback because the login is gone from the session', async () => {
+      const {
+        controller,
+        oidcProviderService,
+        oidcProtocolService,
+        guardRedirectService,
+      } = buildController();
+      const http = buildRequestAndResponse([buildStoredLogin()]);
+
+      await callback(controller, http);
+      await callback(controller, http);
+
+      expect(http.response.redirect).toHaveBeenNthCalledWith(1, SIGNED_IN_URL);
+      expect(
+        guardRedirectService.getRedirectErrorUrlAndCaptureExceptions,
+      ).toHaveBeenCalledTimes(1);
+      expect(oidcProviderService.findByIdWithWorkspace).toHaveBeenCalledTimes(
+        1,
       );
       expect(oidcProtocolService.exchangeCode).toHaveBeenCalledTimes(1);
     });
 
     it('does not touch the session or the IdP for an unknown state', async () => {
+      const {
+        controller,
+        oidcProviderService,
+        oidcProtocolService,
+        guardRedirectService,
+      } = buildController();
+      const http = buildRequestAndResponse([buildStoredLogin()]);
+
+      await callback(controller, http, 'other-state');
+
+      expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
+        AuthExceptionCode.SSO_AUTH_FAILED,
+      );
+      expect(http.session.save).not.toHaveBeenCalled();
+      expect(oidcProviderService.findByIdWithWorkspace).not.toHaveBeenCalled();
+      expect(oidcProtocolService.exchangeCode).not.toHaveBeenCalled();
+    });
+
+    it('accepts a login that is nearly at the age limit', async () => {
       const { controller, oidcProtocolService } = buildController();
-      const { request, response, session, redirect } = buildRequestAndResponse([
-        buildStoredLogin(),
+      const http = buildRequestAndResponse([
+        buildStoredLogin({ createdAt: Date.now() - 9 * 60 * 1000 }),
       ]);
 
-      await controller.callback('other-state', request, response);
+      await callback(controller, http);
 
-      expect(errorCodeRedirected(redirect(response))).toBe('SSO_AUTH_FAILED');
-      expect(session.save).not.toHaveBeenCalled();
-      expect(oidcProtocolService.exchangeCode).not.toHaveBeenCalled();
+      expect(oidcProtocolService.exchangeCode).toHaveBeenCalledTimes(1);
     });
 
     it('drops an expired login from the session and rejects it', async () => {
-      const { controller, oidcProtocolService } = buildController();
-      const { request, response, session, redirect } = buildRequestAndResponse([
+      const {
+        controller,
+        oidcProviderService,
+        oidcProtocolService,
+        guardRedirectService,
+      } = buildController();
+      const http = buildRequestAndResponse([
         buildStoredLogin({ createdAt: Date.now() - 11 * 60 * 1000 }),
       ]);
 
-      await controller.callback('state-1', request, response);
+      await callback(controller, http);
 
-      expect(errorCodeRedirected(redirect(response))).toBe('SSO_AUTH_FAILED');
-      expect(session.oidcLogins).toEqual([]);
-      expect(session.save).toHaveBeenCalledTimes(1);
+      expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
+        AuthExceptionCode.SSO_AUTH_FAILED,
+      );
+      expect(http.session.oidcLogins).toEqual([]);
+      expect(http.session.save).toHaveBeenCalledTimes(1);
+      expect(oidcProviderService.findByIdWithWorkspace).not.toHaveBeenCalled();
       expect(oidcProtocolService.exchangeCode).not.toHaveBeenCalled();
     });
 
-    it('rejects an inactive provider before the code exchange', async () => {
-      const { controller, oidcProtocolService } = buildController({
-        provider: buildProvider({ status: 'inactive' }),
-      });
-      const { request, response, redirect } = buildRequestAndResponse([
-        buildStoredLogin(),
-      ]);
+    it('rejects a provider deactivated after the login started', async () => {
+      const {
+        controller,
+        oidcProviderService,
+        oidcProtocolService,
+        guardRedirectService,
+      } = buildController({ provider: buildProvider({ status: 'inactive' }) });
+      const http = buildRequestAndResponse([buildStoredLogin()]);
 
-      await controller.callback('state-1', request, response);
+      await callback(controller, http);
 
-      expect(errorCodeRedirected(redirect(response))).toBe('SSO_AUTH_FAILED');
+      expect(oidcProviderService.findByIdWithWorkspace).toHaveBeenCalledWith(
+        'provider-1',
+      );
       expect(oidcProtocolService.exchangeCode).not.toHaveBeenCalled();
+      expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
+        AuthExceptionCode.SSO_AUTH_FAILED,
+      );
     });
 
-    it('rejects an unverified email without signing in', async () => {
-      const { controller, oidcAccountService } = buildController({
+    it('rejects an unverified email after the exchange, without signing in', async () => {
+      const {
+        controller,
+        oidcProtocolService,
+        oidcAccountService,
+        guardRedirectService,
+      } = buildController({
         claims: { email: 'ada@example.com', email_verified: false },
       });
-      const { request, response, redirect } = buildRequestAndResponse([
-        buildStoredLogin(),
-      ]);
+      const http = buildRequestAndResponse([buildStoredLogin()]);
 
-      await controller.callback('state-1', request, response);
+      await callback(controller, http);
 
-      expect(errorCodeRedirected(redirect(response))).toBe('SSO_AUTH_FAILED');
+      expect(oidcProtocolService.exchangeCode).toHaveBeenCalledTimes(1);
       expect(oidcAccountService.signIn).not.toHaveBeenCalled();
+      expect(getRedirectedFailure(guardRedirectService).error.code).toBe(
+        AuthExceptionCode.SSO_AUTH_FAILED,
+      );
     });
 
-    it('hides the message of an IdP library error behind SSO_AUTH_FAILED', async () => {
+    it('replaces the message of an IdP library error with the generic failure', async () => {
       const { controller, oidcProtocolService, guardRedirectService } =
         buildController();
+
       oidcProtocolService.exchangeCode.mockRejectedValue(
         new Error('state mismatch: expected state-1'),
       );
-      const { request, response } = buildRequestAndResponse([
-        buildStoredLogin(),
-      ]);
 
-      await controller.callback('state-1', request, response);
+      await callback(controller, buildRequestAndResponse([buildStoredLogin()]));
 
-      const { error } =
-        guardRedirectService.getRedirectErrorUrlAndCaptureExceptions.mock
-          .calls[0][0];
+      const { error, pathname } = getRedirectedFailure(guardRedirectService);
 
       expect(error).toBeInstanceOf(AuthException);
       expect(error.code).toBe(AuthExceptionCode.SSO_AUTH_FAILED);
-      expect(error.message).not.toContain('state-1');
+      expect(error.message).toBe(GENERIC_FAILURE_MESSAGE);
+      expect(pathname).toBe(AppPath.Verify);
     });
 
-    it('keeps the code of an AuthException from the sign-in pipeline', async () => {
-      const { controller, oidcAccountService } = buildController();
-      oidcAccountService.signIn.mockRejectedValue(
-        new AuthException('no signup', AuthExceptionCode.SIGNUP_DISABLED),
+    it('keeps an AuthException from the sign-in pipeline as it is', async () => {
+      const { controller, oidcAccountService, guardRedirectService } =
+        buildController();
+      const signUpDisabled = new AuthException(
+        'no signup',
+        AuthExceptionCode.SIGNUP_DISABLED,
       );
-      const { request, response, redirect } = buildRequestAndResponse([
-        buildStoredLogin(),
-      ]);
 
-      await controller.callback('state-1', request, response);
+      oidcAccountService.signIn.mockRejectedValue(signUpDisabled);
 
-      expect(errorCodeRedirected(redirect(response))).toBe('SIGNUP_DISABLED');
+      await callback(controller, buildRequestAndResponse([buildStoredLogin()]));
+
+      expect(getRedirectedFailure(guardRedirectService).error).toBe(
+        signUpDisabled,
+      );
     });
   });
 });
