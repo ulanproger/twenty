@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { isNonEmptyString } from '@sniptt/guards';
 import { custom, generators, Issuer, type IssuerMetadata } from 'openid-client';
 import { isPlainObject } from 'twenty-shared/utils';
 
+import { OidcSsoException } from 'src/engine/core-modules/oidc-sso/oidc-sso.exception';
 import { type WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
 import { type OidcLogin } from 'src/engine/core-modules/oidc-sso/utils/oidc-login-session.util';
 import { buildOidcAuthorizationParams } from 'src/engine/core-modules/oidc-sso/utils/build-oidc-authorization-params.util';
@@ -25,6 +26,8 @@ type ProviderCredentials = {
 
 @Injectable()
 export class OidcProtocolService {
+  private readonly logger = new Logger(OidcProtocolService.name);
+
   // Holds the promise so concurrent logins share one discovery request.
   private readonly discoveryCache = new Map<
     string,
@@ -92,6 +95,23 @@ export class OidcProtocolService {
     }
 
     return idTokenClaims;
+  }
+
+  // Bypasses the cache so a fresh IdP configuration is what gets validated.
+  async assertIssuerDiscoverable(issuerUrl: string): Promise<void> {
+    try {
+      await this.fetchIssuer(issuerUrl);
+    } catch (error) {
+      // The cause stays in the log: network error texts must not reach the client.
+      this.logger.warn(
+        `OIDC discovery failed for ${issuerUrl}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+
+      throw new OidcSsoException(
+        `OIDC discovery failed for ${issuerUrl}`,
+        'ISSUER_DISCOVERY_FAILED',
+      );
+    }
   }
 
   private getCallbackUrl(): string {
