@@ -16,6 +16,10 @@ const CASES = [
     supportedMethods: ['client_secret_basic', 'client_secret_post'],
     expected: 'client_secret_basic',
   },
+  {
+    supportedMethods: ['client_secret_post', 'client_secret_basic'],
+    expected: 'client_secret_basic',
+  },
 ];
 
 const requestTokenFromLocalIdp = async (supportedMethods) => {

@@ -234,6 +234,7 @@ describe('OidcProtocolService', () => {
 
     // openid-client falls back to client_secret_post on its own; this pins that
     // behaviour so setting the method explicitly later cannot break such IdPs.
+    // The request itself is checked by scripts/fork/oidc-dev/check-client-auth-method.cjs.
     describe('token endpoint authentication method', () => {
       const exchangeAndReadAuthMethod = async (
         supportedMethods: string[] | undefined,
