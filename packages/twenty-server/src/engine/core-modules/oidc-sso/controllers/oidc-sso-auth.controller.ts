@@ -79,7 +79,7 @@ export class OidcSsoAuthController {
 
       workspace = provider.workspace;
 
-      this.assertProviderIsUsable(provider);
+      this.assertProviderIsActive(provider);
 
       if (
         isString(workspaceInviteHash) &&
@@ -157,7 +157,7 @@ export class OidcSsoAuthController {
 
       workspace = provider.workspace;
 
-      this.assertProviderIsUsable(provider);
+      this.assertProviderIsActive(provider);
 
       const claims = await this.oidcProtocolService.exchangeCode({
         provider,
@@ -185,7 +185,9 @@ export class OidcSsoAuthController {
     }
   }
 
-  private assertProviderIsUsable(
+  // Only the status can fail here. The workspace binding is checked in OidcAccountService
+  // against the workspace the sign-in resolves to, which an invite hash may change.
+  private assertProviderIsActive(
     provider: Pick<WorkspaceOidcProviderEntity, 'workspaceId' | 'status'>,
   ) {
     const access = checkOidcProviderAccess({
