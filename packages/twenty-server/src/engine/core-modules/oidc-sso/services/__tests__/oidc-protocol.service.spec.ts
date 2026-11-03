@@ -264,6 +264,7 @@ describe('OidcProtocolService', () => {
 
       it.each([
         ['the IdP does not list methods', undefined],
+        ['the IdP lists no methods at all', []],
         ['the IdP lists client_secret_basic', ['client_secret_basic']],
         [
           'the IdP lists both methods',
