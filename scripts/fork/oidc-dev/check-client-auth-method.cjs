@@ -5,13 +5,16 @@ const http = require('http');
 const { Issuer } = require('openid-client');
 
 const CASES = [
-  { supportedMethods: undefined, expected: 'basic' },
-  { supportedMethods: [], expected: 'basic' },
-  { supportedMethods: ['client_secret_basic'], expected: 'basic' },
-  { supportedMethods: ['client_secret_post'], expected: 'post' },
+  { supportedMethods: undefined, expected: 'client_secret_basic' },
+  { supportedMethods: [], expected: 'client_secret_basic' },
+  {
+    supportedMethods: ['client_secret_basic'],
+    expected: 'client_secret_basic',
+  },
+  { supportedMethods: ['client_secret_post'], expected: 'client_secret_post' },
   {
     supportedMethods: ['client_secret_basic', 'client_secret_post'],
-    expected: 'basic',
+    expected: 'client_secret_basic',
   },
 ];
 
@@ -21,11 +24,15 @@ const requestTokenFromLocalIdp = async (supportedMethods) => {
   const server = http.createServer((request, response) => {
     let body = '';
 
-    request.on('data', (chunk) => (body += chunk));
+    request.on('data', (chunk) => {
+      body += chunk;
+    });
     request.on('end', () => {
       received = { authorization: request.headers.authorization, body };
       response.setHeader('content-type', 'application/json');
-      response.end(JSON.stringify({ access_token: 'token', token_type: 'Bearer' }));
+      response.end(
+        JSON.stringify({ access_token: 'token', token_type: 'Bearer' }),
+      );
     });
   });
 
@@ -57,8 +64,8 @@ const requestTokenFromLocalIdp = async (supportedMethods) => {
   const hasHeader = received.authorization !== undefined;
   const hasBodySecret = received.body.includes('client_secret=client-secret');
 
-  if (hasHeader && !hasBodySecret) return 'basic';
-  if (!hasHeader && hasBodySecret) return 'post';
+  if (hasHeader && !hasBodySecret) return 'client_secret_basic';
+  if (!hasHeader && hasBodySecret) return 'client_secret_post';
 
   return 'unknown';
 };

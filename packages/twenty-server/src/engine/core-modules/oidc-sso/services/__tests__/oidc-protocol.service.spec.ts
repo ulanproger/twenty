@@ -238,18 +238,7 @@ describe('OidcProtocolService', () => {
       const exchangeAndReadAuthMethod = async (
         supportedMethods: string[] | undefined,
       ) => {
-        let authMethod: string | undefined;
-
-        jest
-          .spyOn(baseClientPrototype, 'callback')
-          .mockImplementation(function (this: {
-            token_endpoint_auth_method: string;
-          }) {
-            authMethod = this.token_endpoint_auth_method;
-
-            return Promise.resolve({ claims: () => ({ sub: 'sub-1' }) });
-          });
-
+        const callback = mockTokenEndpoint({ sub: 'sub-1' });
         const { service } = buildService({
           ...discoveryDocument,
           ...(supportedMethods !== undefined && {
@@ -259,28 +248,32 @@ describe('OidcProtocolService', () => {
 
         await service.exchangeCode({ ...credentials, requestUrl, login });
 
-        return authMethod;
+        return callback.mock.contexts[0].token_endpoint_auth_method;
       };
 
       it.each([
-        ['the IdP does not list methods', undefined, 'client_secret_basic'],
-        ['the IdP lists no methods at all', [], 'client_secret_basic'],
         [
-          'the IdP lists client_secret_basic',
+          'uses basic when methods are missing',
+          undefined,
+          'client_secret_basic',
+        ],
+        ['uses basic when methods are empty', [], 'client_secret_basic'],
+        [
+          'uses basic when basic is listed',
           ['client_secret_basic'],
           'client_secret_basic',
         ],
         [
-          'the IdP lists both methods',
+          'uses basic when both are listed',
           ['client_secret_post', 'client_secret_basic'],
           'client_secret_basic',
         ],
         [
-          'the IdP lists only client_secret_post',
+          'uses post when only post is listed',
           ['client_secret_post'],
           'client_secret_post',
         ],
-      ])('uses the right method when %s', async (_label, methods, expected) => {
+      ])('%s', async (_title, methods, expected) => {
         await expect(exchangeAndReadAuthMethod(methods)).resolves.toBe(
           expected,
         );

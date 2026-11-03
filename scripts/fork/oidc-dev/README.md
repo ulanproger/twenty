@@ -45,7 +45,7 @@ Leave it unset to test the "internal host is blocked" scenario.
 ## Other checks
 
 - `smoke-login.sh` and `smoke-admin-api.sh`: end-to-end against a running server (see the headers of the scripts).
-- `node scripts/fork/oidc-dev/check-client-auth-method.cjs`: asserts that `openid-client` sends the secret in the `Authorization` header or in the form body depending on the IdP's `token_endpoint_auth_methods_supported`. Rerun after an `openid-client` upgrade.
+- `node scripts/fork/oidc-dev/check-client-auth-method.cjs`: confirms how `openid-client` sends the client secret; rerun after upgrading `openid-client`.
 
 ## Fork sync setup (once per clone)
 
