@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { isValidUuid } from 'twenty-shared/utils';
+import { isDefined, isValidUuid } from 'twenty-shared/utils';
 import { Repository } from 'typeorm';
 
 import { WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
@@ -145,11 +145,11 @@ export class OidcProviderService {
       );
     }
 
-    if (name !== undefined) {
+    if (isDefined(name)) {
       provider.name = name;
     }
 
-    if (status !== undefined) {
+    if (isDefined(status)) {
       provider.status = status;
     }
 

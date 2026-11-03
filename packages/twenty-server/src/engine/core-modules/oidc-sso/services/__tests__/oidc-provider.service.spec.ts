@@ -154,6 +154,21 @@ describe('OidcProviderService', () => {
       );
     });
 
+    it('ignores an explicit null name and status instead of writing them', async () => {
+      const { service, repository } = buildService();
+
+      await service.update({
+        workspaceId: 'workspace-a',
+        id: 'p1',
+        name: null as unknown as string,
+        status: null as unknown as 'active',
+      });
+
+      expect(repository.save).toHaveBeenCalledWith(
+        expect.objectContaining({ name: 'Old', status: 'active' }),
+      );
+    });
+
     it('treats a provider of another workspace as not found', async () => {
       const { service, repository } = buildService({ stored: null });
 
