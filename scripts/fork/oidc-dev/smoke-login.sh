@@ -79,50 +79,51 @@ set_provider_status() {
     "UPDATE core.\"workspaceOidcProvider\" SET status = '$1' WHERE id = '$PROVIDER_ID'" >/dev/null
 }
 
-claims_for() { printf '{"email":"%s"%s}' "$1" "${2:+,$2}"; }
+# The sign-in only accepts an email the IdP marks as verified.
+claims_for() { printf '{"email":"%s","email_verified":true%s}' "$1" "${2:+,$2}"; }
 
 EXISTING_CLAIMS=$(claims_for "$EXISTING_EMAIL" '"given_name":"Aaron"')
-PLAIN_CLAIMS=$(claims_for "$EXISTING_EMAIL")
-VERIFIED_CLAIMS=$(claims_for "$EXISTING_EMAIL" '"email_verified":true')
-UNVERIFIED_CLAIMS=$(claims_for "$EXISTING_EMAIL" '"email_verified":false')
-UNVERIFIED_STRING_CLAIMS=$(claims_for "$EXISTING_EMAIL" '"email_verified":"false"')
+VALID_CLAIMS=$(claims_for "$EXISTING_EMAIL")
+NO_FLAG_CLAIMS=$(printf '{"email":"%s"}' "$EXISTING_EMAIL")
+UNVERIFIED_CLAIMS=$(printf '{"email":"%s","email_verified":false}' "$EXISTING_EMAIL")
+UNVERIFIED_STRING_CLAIMS=$(printf '{"email":"%s","email_verified":"false"}' "$EXISTING_EMAIL")
 UPN_CLAIMS=$(printf '{"upn":"%s"}' "$EXISTING_EMAIL")
 STRANGER_CLAIMS=$(claims_for "stranger-$$@example.com")
 INVITED_CLAIMS=$(claims_for "invited-$$@example.com" '"given_name":"Invited"')
 
 expect_login "existing user signs in" "$(sign_in "$EXISTING_CLAIMS")"
-expect_login "email taken from upn" "$(sign_in "$UPN_CLAIMS")"
-expect_login "email_verified true is accepted" "$(sign_in "$VERIFIED_CLAIMS")"
+expect_rejected "upn alone is not an email" "$(sign_in "$UPN_CLAIMS")"
+expect_rejected "email without email_verified is rejected" "$(sign_in "$NO_FLAG_CLAIMS")"
 expect_rejected "email_verified false is rejected" "$(sign_in "$UNVERIFIED_CLAIMS")"
 expect_rejected "email_verified \"false\" is rejected" "$(sign_in "$UNVERIFIED_STRING_CLAIMS")"
-expect_rejected "no email and no upn" "$(sign_in '{"given_name":"Nobody"}')"
-expect_rejected "malformed email" "$(sign_in '{"email":"not-an-email"}')"
+expect_rejected "no email" "$(sign_in '{"given_name":"Nobody"}')"
+expect_rejected "malformed email" "$(sign_in '{"email":"not-an-email","email_verified":true}')"
 expect_rejected "new user without an invite" "$(sign_in "$STRANGER_CLAIMS")"
 expect_login "new user with the workspace invite hash" \
   "$(sign_in "$INVITED_CLAIMS" "?workspaceInviteHash=$SAME_WORKSPACE_INVITE")"
 expect_rejected "invite hash of another workspace" \
-  "$(sign_in "$PLAIN_CLAIMS" "?workspaceInviteHash=$OTHER_WORKSPACE_INVITE")"
+  "$(sign_in "$VALID_CLAIMS" "?workspaceInviteHash=$OTHER_WORKSPACE_INVITE")"
 expect_rejected "unknown provider id" \
-  "$(sign_in "$PLAIN_CLAIMS" "" "00000000-0000-4000-8000-000000000000")"
-expect_rejected "malformed provider id" "$(sign_in "$PLAIN_CLAIMS" "" "not-a-uuid")"
+  "$(sign_in "$VALID_CLAIMS" "" "00000000-0000-4000-8000-000000000000")"
+expect_rejected "malformed provider id" "$(sign_in "$VALID_CLAIMS" "" "not-a-uuid")"
 
-sign_in "$PLAIN_CLAIMS" >/dev/null
+sign_in "$VALID_CLAIMS" >/dev/null
 require_callback_url "replayed callback" &&
   expect_rejected "replayed callback" "$(call_callback "$CALLBACK_URL")"
 
-sign_in "$PLAIN_CLAIMS" >/dev/null
+sign_in "$VALID_CLAIMS" >/dev/null
 tampered_url=${CALLBACK_URL/state=/state=x}
 if require_callback_url "foreign state" && [ "$tampered_url" != "$CALLBACK_URL" ]; then
   expect_rejected "foreign state" "$(call_callback "$tampered_url")"
 fi
 
-sign_in "$PLAIN_CLAIMS" >/dev/null
+sign_in "$VALID_CLAIMS" >/dev/null
 require_callback_url "callback without the session cookie" &&
   expect_rejected "callback without the session cookie" \
     "$(curl -s -o /dev/null -w '%{redirect_url}' "$CALLBACK_URL")"
 
 set_provider_status inactive
-expect_rejected "inactive provider" "$(sign_in "$PLAIN_CLAIMS")"
+expect_rejected "inactive provider" "$(sign_in "$VALID_CLAIMS")"
 set_provider_status active
 
 if [ "$failures" -gt 0 ]; then

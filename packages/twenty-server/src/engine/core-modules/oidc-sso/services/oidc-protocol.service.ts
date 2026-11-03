@@ -84,7 +84,8 @@ export class OidcProtocolService {
 
     const identity = extractOidcIdentity(idTokenClaims);
 
-    // Azure AD v2 leaves email out of the id_token. Passing the TokenSet makes
+    // Some IdPs (e.g. Azure AD v2) leave email out of the id_token. The result still
+    // needs email_verified, so userinfo has to carry it. Passing the TokenSet makes
     // openid-client check that the userinfo sub matches the id_token sub.
     if (
       identity.status === 'rejected' &&

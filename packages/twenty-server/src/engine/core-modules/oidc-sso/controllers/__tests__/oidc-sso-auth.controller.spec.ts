@@ -39,7 +39,7 @@ const buildStoredLogin = (overrides: Record<string, unknown> = {}) => ({
 
 const buildController = ({
   provider = buildProvider(),
-  claims = { email: 'ada@example.com' },
+  claims = { email: 'ada@example.com', email_verified: true },
 }: {
   provider?: ReturnType<typeof buildProvider> | null;
   claims?: Record<string, unknown>;
@@ -297,7 +297,11 @@ describe('OidcSsoAuthController', () => {
     ) => controller.callback(state, request as never, response as never);
 
     it('passes the stored login to the code exchange and redirects to the signed-in url', async () => {
-      const claims = { email: 'ada@example.com', given_name: 'Ada' };
+      const claims = {
+        email: 'ada@example.com',
+        email_verified: true,
+        given_name: 'Ada',
+      };
       const {
         controller,
         oidcProtocolService,
@@ -494,30 +498,34 @@ describe('OidcSsoAuthController', () => {
       );
     });
 
-    it('rejects an unverified email after the exchange, without signing in', async () => {
-      const {
-        controller,
-        oidcProtocolService,
-        oidcAccountService,
-        guardRedirectService,
-      } = buildController({
-        claims: { email: 'ada@example.com', email_verified: false },
-      });
-      const http = buildRequestAndResponse([buildStoredLogin()]);
+    it.each([
+      ['unverified', { email: 'ada@example.com', email_verified: false }],
+      ['without an email_verified claim', { email: 'ada@example.com' }],
+    ])(
+      'rejects an email that is %s after the exchange, without signing in',
+      async (_label, claims) => {
+        const {
+          controller,
+          oidcProtocolService,
+          oidcAccountService,
+          guardRedirectService,
+        } = buildController({ claims });
+        const http = buildRequestAndResponse([buildStoredLogin()]);
 
-      await callback(controller, http);
+        await callback(controller, http);
 
-      expect(oidcProtocolService.exchangeCode).toHaveBeenCalledTimes(1);
-      expect(oidcAccountService.signIn).not.toHaveBeenCalled();
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('OIDC identity rejected'),
-      );
+        expect(oidcProtocolService.exchangeCode).toHaveBeenCalledTimes(1);
+        expect(oidcAccountService.signIn).not.toHaveBeenCalled();
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining('OIDC identity rejected'),
+        );
 
-      const { error } = getRedirectedFailure(guardRedirectService);
+        const { error } = getRedirectedFailure(guardRedirectService);
 
-      expect(error.code).toBe(AuthExceptionCode.SSO_AUTH_FAILED);
-      expect(error.message).toBe(GENERIC_FAILURE_MESSAGE);
-    });
+        expect(error.code).toBe(AuthExceptionCode.SSO_AUTH_FAILED);
+        expect(error.message).toBe(GENERIC_FAILURE_MESSAGE);
+      },
+    );
 
     it('replaces the message of an IdP library error with the generic failure', async () => {
       const {

@@ -189,7 +189,11 @@ describe('OidcProtocolService', () => {
       jest.spyOn(baseClientPrototype, 'callback').mockResolvedValue(tokenSet);
       const userinfo = jest
         .spyOn(baseClientPrototype, 'userinfo')
-        .mockResolvedValue({ sub: 'other', email: 'ada@example.com' });
+        .mockResolvedValue({
+          sub: 'other',
+          email: 'ada@example.com',
+          email_verified: true,
+        });
       const { service } = buildService({
         ...discoveryDocument,
         userinfo_endpoint: `${ISSUER}/userinfo`,
@@ -198,7 +202,11 @@ describe('OidcProtocolService', () => {
       // The TokenSet (not a bare access token) is what lets openid-client compare sub values.
       await expect(
         service.exchangeCode({ ...credentials, requestUrl, login }),
-      ).resolves.toEqual({ sub: 'sub-1', email: 'ada@example.com' });
+      ).resolves.toEqual({
+        sub: 'sub-1',
+        email: 'ada@example.com',
+        email_verified: true,
+      });
 
       expect(userinfo).toHaveBeenCalledWith(tokenSet);
     });

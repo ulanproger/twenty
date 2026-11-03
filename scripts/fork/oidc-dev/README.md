@@ -30,9 +30,10 @@ Leave it unset to test the "internal host is blocked" scenario.
 
 | Scenario | Claims JSON | Expected |
 |---|---|---|
-| New user | `{"email":"new@example.com","given_name":"New","family_name":"User"}` | account created, signed in |
-| Existing user | `{"email":"<existing email>"}` | signed in as that user |
-| Azure-style `upn` | `{"upn":"alice@corp.example"}` | email taken from `upn` |
+| New user | `{"email":"new@example.com","email_verified":true,"given_name":"New","family_name":"User"}` | account created, signed in |
+| Existing user | `{"email":"<existing email>","email_verified":true}` | signed in as that user |
+| Azure-style `upn` | `{"upn":"alice@corp.example"}` | rejected (no verified email) |
+| No `email_verified` | `{"email":"a@example.com"}` | rejected |
 | Unverified email | `{"email":"a@example.com","email_verified":false}` | rejected |
 | No email | `{}` | rejected |
 | Invite | open the invite link, then sign in via SSO | joins the invited workspace |

@@ -25,21 +25,20 @@ const readTrimmedString = (value: unknown): string | null => {
 };
 
 // Some IdPs (e.g. Cognito) send booleans as strings.
-const isExplicitlyFalse = (value: unknown): boolean =>
-  value === false || (isString(value) && value.toLowerCase() === 'false');
+const isExplicitlyTrue = (value: unknown): boolean =>
+  value === true || (isString(value) && value.toLowerCase() === 'true');
 
 export const extractOidcIdentity = (
   claims: Record<string, unknown>,
 ): ExtractOidcIdentityResult => {
-  const emailClaim = readTrimmedString(claims.email);
-  const email = emailClaim ?? readTrimmedString(claims.upn);
+  const email = readTrimmedString(claims.email);
 
   if (email === null) {
     return { status: 'rejected', reason: 'email-missing' };
   }
 
-  // upn has no verified flag, so only the email claim is subject to it.
-  if (emailClaim !== null && isExplicitlyFalse(claims.email_verified)) {
+  // The sign-in trusts the email as verified, so the IdP has to say so.
+  if (!isExplicitlyTrue(claims.email_verified)) {
     return { status: 'rejected', reason: 'email-not-verified' };
   }
 
