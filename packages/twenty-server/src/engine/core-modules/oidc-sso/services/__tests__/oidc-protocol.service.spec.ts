@@ -231,5 +231,54 @@ describe('OidcProtocolService', () => {
 
       expect(userinfo).not.toHaveBeenCalled();
     });
+
+    // openid-client falls back to client_secret_post on its own; this pins that
+    // behaviour so setting the method explicitly later cannot break such IdPs.
+    // The request itself is checked by scripts/fork/oidc-dev/check-client-auth-method.cjs.
+    describe('token endpoint authentication method', () => {
+      const exchangeAndReadAuthMethod = async (
+        supportedMethods: string[] | undefined,
+      ) => {
+        const callback = mockTokenEndpoint({ sub: 'sub-1' });
+        const { service } = buildService({
+          ...discoveryDocument,
+          ...(supportedMethods !== undefined && {
+            token_endpoint_auth_methods_supported: supportedMethods,
+          }),
+        });
+
+        await service.exchangeCode({ ...credentials, requestUrl, login });
+
+        return callback.mock.contexts[0].token_endpoint_auth_method;
+      };
+
+      it.each([
+        [
+          'uses basic when methods are missing',
+          undefined,
+          'client_secret_basic',
+        ],
+        ['uses basic when methods are empty', [], 'client_secret_basic'],
+        [
+          'uses basic when basic is listed',
+          ['client_secret_basic'],
+          'client_secret_basic',
+        ],
+        [
+          'uses basic when both are listed',
+          ['client_secret_post', 'client_secret_basic'],
+          'client_secret_basic',
+        ],
+        [
+          'uses post when only post is listed',
+          ['client_secret_post'],
+          'client_secret_post',
+        ],
+      ])('%s', async (_title, methods, expected) => {
+        await expect(exchangeAndReadAuthMethod(methods)).resolves.toBe(
+          expected,
+        );
+      });
+    });
   });
 });

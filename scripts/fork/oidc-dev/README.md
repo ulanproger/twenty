@@ -42,6 +42,11 @@ Leave it unset to test the "internal host is blocked" scenario.
 | Internal host blocked | unset `OUTBOUND_HTTP_ALLOWED_INTERNAL_HOSTS` | provider creation fails with an issuer error |
 | Two providers | add `/idp-a` and `/idp-b` to one workspace | both selectable |
 
+## Other checks
+
+- `smoke-login.sh` and `smoke-admin-api.sh`: end-to-end against a running server (see the headers of the scripts).
+- `node scripts/fork/oidc-dev/check-client-auth-method.cjs`: confirms how `openid-client` sends the client secret; needs no running server or Docker; rerun after upgrading `openid-client`.
+
 ## Fork sync setup (once per clone)
 
 ```bash
