@@ -28,7 +28,10 @@ export class PublicOidcProviderResolver {
   async publicOidcProviders(
     @Args('origin') origin: string,
   ): Promise<PublicOidcProviderDTO[]> {
-    const workspace = await this.findWorkspace(origin);
+    // The domain lookup parses the origin with `new URL`, which throws on garbage.
+    const workspace = URL.canParse(origin)
+      ? await this.findWorkspace(origin)
+      : undefined;
 
     if (workspace === undefined) {
       return [];

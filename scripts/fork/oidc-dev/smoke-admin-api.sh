@@ -135,6 +135,8 @@ check "second delete is not found" 'echo "$deleted_again" | grep -q NOT_FOUND'
 
 # Unknown origin gives an empty list, not an error
 unknown=$(gql '' '{"query":"{publicOidcProviders(origin:\"http://unknown.example.com\"){id}}"}')
+garbage=$(gql '' '{"query":"{publicOidcProviders(origin:\"not a url\"){id}}"}')
+check "public query returns an empty list for an unparsable origin" 'echo "$garbage" | grep -q "\"publicOidcProviders\":\[\]"'
 check "public query never errors on an unknown origin" 'echo "$unknown" | grep -q "\"publicOidcProviders\":\["'
 
 echo
