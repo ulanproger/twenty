@@ -159,6 +159,12 @@ export class OidcProtocolService {
 
     const issuer = this.fetchIssuer(issuerUrl);
 
+    for (const [cachedUrl, entry] of this.discoveryCache) {
+      if (entry.expiresAt <= Date.now()) {
+        this.discoveryCache.delete(cachedUrl);
+      }
+    }
+
     this.discoveryCache.set(issuerUrl, {
       issuer,
       expiresAt: Date.now() + DISCOVERY_CACHE_TTL_MS,

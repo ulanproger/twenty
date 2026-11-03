@@ -137,6 +137,11 @@ export class OidcSsoAuthController {
         maxAgeMs: OIDC_LOGIN_MAX_AGE_MS,
       });
 
+      // Nothing was taken, so there is nothing to persist for a stray or forged callback.
+      if (taken.status === 'missing') {
+        throw new Error('OIDC login missing');
+      }
+
       // Saved before the code exchange, so a replayed callback finds nothing.
       request.session.oidcLogins = taken.remainingLogins;
       await this.saveSession(request.session);
