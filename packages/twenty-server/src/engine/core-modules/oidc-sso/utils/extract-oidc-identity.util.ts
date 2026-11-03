@@ -24,7 +24,7 @@ const readTrimmedString = (value: unknown): string | null => {
   return isNonEmptyString(trimmed) ? trimmed : null;
 };
 
-// Some IdPs (e.g. Cognito) send booleans as strings.
+// Some IdPs (e.g. Cognito) send booleans as strings; only "true" in any case counts.
 const isExplicitlyTrue = (value: unknown): boolean =>
   value === true || (isString(value) && value.toLowerCase() === 'true');
 
