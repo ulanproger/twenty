@@ -263,23 +263,27 @@ describe('OidcProtocolService', () => {
       };
 
       it.each([
-        ['the IdP does not list methods', undefined],
-        ['the IdP lists no methods at all', []],
-        ['the IdP lists client_secret_basic', ['client_secret_basic']],
+        ['the IdP does not list methods', undefined, 'client_secret_basic'],
+        ['the IdP lists no methods at all', [], 'client_secret_basic'],
+        [
+          'the IdP lists client_secret_basic',
+          ['client_secret_basic'],
+          'client_secret_basic',
+        ],
         [
           'the IdP lists both methods',
           ['client_secret_post', 'client_secret_basic'],
-        ],
-      ])('uses client_secret_basic when %s', async (_label, methods) => {
-        await expect(exchangeAndReadAuthMethod(methods)).resolves.toBe(
           'client_secret_basic',
+        ],
+        [
+          'the IdP lists only client_secret_post',
+          ['client_secret_post'],
+          'client_secret_post',
+        ],
+      ])('uses the right method when %s', async (_label, methods, expected) => {
+        await expect(exchangeAndReadAuthMethod(methods)).resolves.toBe(
+          expected,
         );
-      });
-
-      it('uses client_secret_post when the IdP lists only that method', async () => {
-        await expect(
-          exchangeAndReadAuthMethod(['client_secret_post']),
-        ).resolves.toBe('client_secret_post');
       });
     });
   });
