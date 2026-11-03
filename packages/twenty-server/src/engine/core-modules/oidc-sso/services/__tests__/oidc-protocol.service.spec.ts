@@ -231,5 +231,55 @@ describe('OidcProtocolService', () => {
 
       expect(userinfo).not.toHaveBeenCalled();
     });
+
+    // openid-client falls back to client_secret_post on its own; this pins that
+    // behaviour so setting the method explicitly later cannot break such IdPs.
+    describe('token endpoint authentication method', () => {
+      const exchangeAndReadAuthMethod = async (
+        supportedMethods: string[] | undefined,
+      ) => {
+        let authMethod: string | undefined;
+
+        jest
+          .spyOn(baseClientPrototype, 'callback')
+          .mockImplementation(function (this: {
+            token_endpoint_auth_method: string;
+          }) {
+            authMethod = this.token_endpoint_auth_method;
+
+            return Promise.resolve({ claims: () => ({ sub: 'sub-1' }) });
+          });
+
+        const { service } = buildService({
+          ...discoveryDocument,
+          ...(supportedMethods !== undefined && {
+            token_endpoint_auth_methods_supported: supportedMethods,
+          }),
+        });
+
+        await service.exchangeCode({ ...credentials, requestUrl, login });
+
+        return authMethod;
+      };
+
+      it.each([
+        ['the IdP does not list methods', undefined],
+        ['the IdP lists client_secret_basic', ['client_secret_basic']],
+        [
+          'the IdP lists both methods',
+          ['client_secret_post', 'client_secret_basic'],
+        ],
+      ])('uses client_secret_basic when %s', async (_label, methods) => {
+        await expect(exchangeAndReadAuthMethod(methods)).resolves.toBe(
+          'client_secret_basic',
+        );
+      });
+
+      it('uses client_secret_post when the IdP lists only that method', async () => {
+        await expect(
+          exchangeAndReadAuthMethod(['client_secret_post']),
+        ).resolves.toBe('client_secret_post');
+      });
+    });
   });
 });
