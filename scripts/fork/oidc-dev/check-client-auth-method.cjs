@@ -54,11 +54,13 @@ const requestTokenFromLocalIdp = async (supportedMethods) => {
     server.close();
   }
 
-  return received.authorization !== undefined
-    ? 'basic'
-    : received.body.includes('client_secret=client-secret')
-      ? 'post'
-      : 'unknown';
+  const hasHeader = received.authorization !== undefined;
+  const hasBodySecret = received.body.includes('client_secret=client-secret');
+
+  if (hasHeader && !hasBodySecret) return 'basic';
+  if (!hasHeader && hasBodySecret) return 'post';
+
+  return 'unknown';
 };
 
 (async () => {
