@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
 import { OidcSsoException } from 'src/engine/core-modules/oidc-sso/oidc-sso.exception';
 import { OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
+import { isOidcIssuerSchemeAllowed } from 'src/engine/core-modules/oidc-sso/utils/is-oidc-issuer-scheme-allowed.util';
 import { normalizeOidcIssuer } from 'src/engine/core-modules/oidc-sso/utils/normalize-oidc-issuer.util';
 import { type PlaintextString } from 'src/engine/core-modules/secret-encryption/branded-strings/plaintext-string.type';
 import { SecretEncryptionService } from 'src/engine/core-modules/secret-encryption/secret-encryption.service';
@@ -84,10 +85,13 @@ export class OidcProviderService {
       );
     }
 
-    // The client secret travels to the token endpoint, so plain http is for development only.
     if (
-      !normalizedIssuer.startsWith('https://') &&
-      this.twentyConfigService.get('NODE_ENV') !== NodeEnvironment.DEVELOPMENT
+      !isOidcIssuerSchemeAllowed({
+        issuer: normalizedIssuer,
+        isDevelopment:
+          this.twentyConfigService.get('NODE_ENV') ===
+          NodeEnvironment.DEVELOPMENT,
+      })
     ) {
       throw new OidcSsoException(
         'OIDC issuer must use https',

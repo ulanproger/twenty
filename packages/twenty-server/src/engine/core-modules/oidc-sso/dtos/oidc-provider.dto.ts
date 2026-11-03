@@ -17,7 +17,7 @@ export class OidcProviderDTO {
   clientId: string;
 
   @Field(() => String)
-  status: string;
+  status: 'active' | 'inactive';
 
   @Field(() => Date)
   createdAt: Date;

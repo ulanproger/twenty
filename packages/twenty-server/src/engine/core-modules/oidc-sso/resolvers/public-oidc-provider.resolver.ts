@@ -15,7 +15,7 @@ import { PublicEndpointGuard } from 'src/engine/guards/public-endpoint.guard';
 
 @MetadataResolver()
 @UseFilters(PreventNestToAutoLogGraphqlErrorsFilter)
-export class OidcPublicProviderResolver {
+export class PublicOidcProviderResolver {
   constructor(
     private readonly oidcProviderService: OidcProviderService,
     private readonly workspaceDomainsService: WorkspaceDomainsService,

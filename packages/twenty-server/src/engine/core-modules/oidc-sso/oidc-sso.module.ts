@@ -8,7 +8,7 @@ import { OidcSsoAuthController } from 'src/engine/core-modules/oidc-sso/controll
 import { WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
 import { CreateWorkspaceOidcProviderFastInstanceCommand } from 'src/engine/core-modules/oidc-sso/migrations/1793640971352-create-workspace-oidc-provider.fast-instance-command';
 import { OidcProviderResolver } from 'src/engine/core-modules/oidc-sso/resolvers/oidc-provider.resolver';
-import { OidcPublicProviderResolver } from 'src/engine/core-modules/oidc-sso/resolvers/oidc-public-provider.resolver';
+import { PublicOidcProviderResolver } from 'src/engine/core-modules/oidc-sso/resolvers/public-oidc-provider.resolver';
 import { OidcAccountService } from 'src/engine/core-modules/oidc-sso/services/oidc-account.service';
 import { OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
@@ -35,7 +35,7 @@ import { UserModule } from 'src/engine/core-modules/user/user.module';
     OidcProtocolService,
     OidcAccountService,
     OidcProviderResolver,
-    OidcPublicProviderResolver,
+    PublicOidcProviderResolver,
   ],
 })
 export class OidcSsoModule {}

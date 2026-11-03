@@ -11,6 +11,7 @@ import { CreateOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/c
 import { DeleteOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/delete-oidc-provider.input';
 import { OidcProviderDTO } from 'src/engine/core-modules/oidc-sso/dtos/oidc-provider.dto';
 import { UpdateOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/update-oidc-provider.input';
+import { toOidcProviderDTO } from 'src/engine/core-modules/oidc-sso/utils/to-oidc-provider-dto.util';
 import { OidcSsoGraphqlApiExceptionFilter } from 'src/engine/core-modules/oidc-sso/filters/oidc-sso-graphql-api-exception.filter';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
@@ -18,25 +19,6 @@ import { AuthWorkspace } from 'src/engine/decorators/auth/auth-workspace.decorat
 import { AuthPrincipalGuard } from 'src/engine/guards/auth-principal.guard';
 import { SettingsPermissionGuard } from 'src/engine/guards/settings-permission.guard';
 import { PermissionsGraphqlApiExceptionFilter } from 'src/engine/metadata-modules/permissions/utils/permissions-graphql-api-exception.filter';
-
-// Picks fields explicitly so the encrypted client secret can never leak by spread.
-const toOidcProviderDTO = ({
-  id,
-  name,
-  issuer,
-  clientId,
-  status,
-  createdAt,
-  updatedAt,
-}: OidcProviderDTO): OidcProviderDTO => ({
-  id,
-  name,
-  issuer,
-  clientId,
-  status,
-  createdAt,
-  updatedAt,
-});
 
 @MetadataResolver()
 @UseFilters(
@@ -79,7 +61,7 @@ export class OidcProviderResolver {
     @AuthWorkspace() { id: workspaceId }: WorkspaceEntity,
   ): Promise<OidcProviderDTO> {
     return toOidcProviderDTO(
-      await this.oidcProviderService.create({ workspaceId, ...input }),
+      await this.oidcProviderService.create({ ...input, workspaceId }),
     );
   }
 
@@ -89,7 +71,7 @@ export class OidcProviderResolver {
     @AuthWorkspace() { id: workspaceId }: WorkspaceEntity,
   ): Promise<OidcProviderDTO> {
     return toOidcProviderDTO(
-      await this.oidcProviderService.update({ workspaceId, ...input }),
+      await this.oidcProviderService.update({ ...input, workspaceId }),
     );
   }
 
