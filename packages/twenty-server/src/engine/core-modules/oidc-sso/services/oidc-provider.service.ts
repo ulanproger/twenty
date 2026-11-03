@@ -79,10 +79,7 @@ export class OidcProviderService {
     const normalizedIssuer = normalizeOidcIssuer(issuer);
 
     if (normalizedIssuer === null) {
-      throw new OidcSsoException(
-        `Invalid OIDC issuer: ${issuer}`,
-        'INVALID_ISSUER',
-      );
+      throw new OidcSsoException('Invalid OIDC issuer URL', 'INVALID_ISSUER');
     }
 
     if (
@@ -148,12 +145,15 @@ export class OidcProviderService {
       );
     }
 
-    return await this.oidcProviderRepository.save(
-      Object.assign(provider, {
-        name: name ?? provider.name,
-        status: status ?? provider.status,
-      }),
-    );
+    if (name !== undefined) {
+      provider.name = name;
+    }
+
+    if (status !== undefined) {
+      provider.status = status;
+    }
+
+    return await this.oidcProviderRepository.save(provider);
   }
 
   async delete({ workspaceId, id }: { workspaceId: string; id: string }) {

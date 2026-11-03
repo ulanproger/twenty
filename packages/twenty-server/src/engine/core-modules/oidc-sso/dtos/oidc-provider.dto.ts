@@ -1,6 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
 import { UUIDScalarType } from 'src/engine/api/graphql/workspace-schema-builder/graphql-types/scalars';
+import { type WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
 
 @ObjectType('OidcProvider')
 export class OidcProviderDTO {
@@ -17,7 +18,7 @@ export class OidcProviderDTO {
   clientId: string;
 
   @Field(() => String)
-  status: 'active' | 'inactive';
+  status: WorkspaceOidcProviderEntity['status'];
 
   @Field(() => Date)
   createdAt: Date;
