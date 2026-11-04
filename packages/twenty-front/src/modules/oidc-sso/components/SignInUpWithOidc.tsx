@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { isDefined } from 'twenty-shared/utils';
 import { MainButton } from 'twenty-ui/components/input';
 import { IconLock } from 'twenty-ui/icon';
+import { Separator } from 'twenty-ui/primitives/layout';
 import { useTheme } from 'twenty-ui/theme';
 
 import { SignInUpSeparator } from '@/auth/sign-in-up/components/internal/SignInUpSeparator';
@@ -12,6 +13,7 @@ import {
   SignInUpStep,
   signInUpStepState,
 } from '@/auth/states/signInUpStepState';
+import { workspaceAuthProvidersState } from '@/workspace/states/workspaceAuthProvidersState';
 import { useRedirect } from '@/domain-manager/hooks/useRedirect';
 import { useOidcPublicProviders } from '@/oidc-sso/hooks/useOidcPublicProviders';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
@@ -21,6 +23,7 @@ export const SignInUpWithOidc = () => {
   const { t } = useLingui();
   const providers = useOidcPublicProviders();
   const signInUpStep = useAtomStateValue(signInUpStepState);
+  const workspaceAuthProviders = useAtomStateValue(workspaceAuthProvidersState);
   const workspaceInviteHash = useParams().workspaceInviteHash;
   const { redirect } = useRedirect();
 
@@ -33,6 +36,14 @@ export const SignInUpWithOidc = () => {
 
     redirect(url.toString());
   };
+
+  // The form draws this line itself when Google, Microsoft or SSO precede the password form.
+  const needsDivider =
+    providers.length > 0 &&
+    workspaceAuthProviders?.password === true &&
+    !workspaceAuthProviders.google &&
+    !workspaceAuthProviders.microsoft &&
+    workspaceAuthProviders.sso.length === 0;
 
   return (
     <>
@@ -49,6 +60,12 @@ export const SignInUpWithOidc = () => {
           <SignInUpSeparator />
         </Fragment>
       ))}
+      {needsDivider && (
+        <>
+          <Separator />
+          <SignInUpSeparator />
+        </>
+      )}
     </>
   );
 };

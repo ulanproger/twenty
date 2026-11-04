@@ -82,7 +82,7 @@ it('keeps Add disabled until every field is filled, then creates the provider', 
   const add = await screen.findByRole('button', { name: 'Add' });
   expect(add).toBeDisabled();
 
-  await userEvent.type(screen.getByLabelText('Name'), 'Okta');
+  await userEvent.type(screen.getByLabelText('Name'), ' Okta ');
   await userEvent.type(
     screen.getByLabelText('Issuer URL'),
     'https://okta.example.com',
@@ -90,7 +90,7 @@ it('keeps Add disabled until every field is filled, then creates the provider', 
   await userEvent.type(screen.getByLabelText('Client ID'), 'abc');
   expect(add).toBeDisabled();
 
-  await userEvent.type(screen.getByLabelText('Client secret'), 's3cret');
+  await userEvent.type(screen.getByLabelText('Client secret'), 's3cret ');
   expect(add).toBeEnabled();
 
   await userEvent.click(add);

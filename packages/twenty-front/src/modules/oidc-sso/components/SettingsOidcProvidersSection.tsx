@@ -3,6 +3,7 @@ import { useLingui } from '@lingui/react/macro';
 import { Section } from 'twenty-ui/components/layout';
 import { IconLock } from 'twenty-ui/icon';
 
+import { ToastOnQueryErrorEffect } from '@/apollo/components/ToastOnQueryErrorEffect';
 import { SettingsOidcProviderCreateDialog } from '@/oidc-sso/components/SettingsOidcProviderCreateDialog';
 import { SettingsOidcProviderRowMenu } from '@/oidc-sso/components/SettingsOidcProviderRowMenu';
 import { OIDC_PROVIDERS } from '@/oidc-sso/graphql/queries';
@@ -17,12 +18,13 @@ type OidcProvidersData = { oidcProviders: OidcProvider[] };
 export const SettingsOidcProvidersSection = () => {
   const { t } = useLingui();
   const { openDialog } = useDialog();
-  const { data, loading } = useQuery<OidcProvidersData>(OIDC_PROVIDERS, {
+  const { data, loading, error } = useQuery<OidcProvidersData>(OIDC_PROVIDERS, {
     fetchPolicy: 'network-only',
   });
 
   return (
     <Section.Root>
+      <ToastOnQueryErrorEffect error={error} />
       <Section.Header
         title={t`OIDC`}
         description={t`Let users sign in with your OpenID Connect provider`}

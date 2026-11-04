@@ -40,6 +40,7 @@ export const SettingsOidcProviderCreateDialog = ({
   const { closeDialog } = useDialog();
   const { enqueueToast } = useToast();
   const buildServerUrl = useBuildServerUrl();
+  const redirectUri = buildServerUrl(CALLBACK_PATH);
   const [form, setForm] = useState(EMPTY_FORM);
 
   const [createProvider, { loading }] = useMutation(CREATE_OIDC_PROVIDER, {
@@ -55,7 +56,13 @@ export const SettingsOidcProviderCreateDialog = ({
 
   const handleSubmit = async () => {
     try {
-      await createProvider({ variables: { input: form } });
+      await createProvider({
+        variables: {
+          input: Object.fromEntries(
+            Object.entries(form).map(([key, value]) => [key, value.trim()]),
+          ),
+        },
+      });
       handleClose();
     } catch (error) {
       enqueueToast(getToastOptionsFromError({ error }));
@@ -95,7 +102,7 @@ export const SettingsOidcProviderCreateDialog = ({
           <Dialog.Header>
             <Dialog.Title>{t`Add OIDC provider`}</Dialog.Title>
             <Dialog.Description>
-              {t`Register this redirect URI in your identity provider: ${buildServerUrl(CALLBACK_PATH)}`}
+              {t`Register this redirect URI in your identity provider: ${redirectUri}`}
             </Dialog.Description>
           </Dialog.Header>
           <Dialog.Body>
