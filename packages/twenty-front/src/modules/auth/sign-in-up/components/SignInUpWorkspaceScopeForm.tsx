@@ -54,7 +54,7 @@ export const SignInUpWorkspaceScopeForm = () => {
 
         {providers.sso.length > 0 && <SignInUpWithSso />}
 
-        <SignInUpWithOidc />
+        {!shouldUseBypass && <SignInUpWithOidc />}
 
         {(providers.google ||
           providers.microsoft ||
