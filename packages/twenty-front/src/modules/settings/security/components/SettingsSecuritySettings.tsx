@@ -8,6 +8,7 @@ import { SettingsOptionCardContentCounter } from '@/settings/components/Settings
 import { SettingsRoleDefaultRole } from '@/settings/roles/components/SettingsRolesDefaultRole';
 import { SettingsRolesQueryEffect } from '@/settings/roles/components/SettingsRolesQueryEffect';
 import { useSettingsAllRoles } from '@/settings/roles/hooks/useSettingsAllRoles';
+import { SettingsOidcProvidersSection } from '@/oidc-sso/components/SettingsOidcProvidersSection';
 import { SettingsSecurityAuthBypassOptionsList } from '@/settings/security/components/SettingsSecurityAuthBypassOptionsList';
 import { SettingsSecurityAuthProvidersOptionsList } from '@/settings/security/components/SettingsSecurityAuthProvidersOptionsList';
 import { SettingsSecurityEditableProfileFields } from '@/settings/security/components/SettingsSecurityEditableProfileFields';
@@ -180,6 +181,8 @@ export const SettingsSecuritySettings = () => {
             )}
           </Section.Root>
         </StyledSectionContainer>
+
+        <SettingsOidcProvidersSection />
 
         <Section.Root>
           <StyledContainer>
