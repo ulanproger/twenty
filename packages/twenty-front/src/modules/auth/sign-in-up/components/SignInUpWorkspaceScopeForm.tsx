@@ -10,6 +10,7 @@ import { useWorkspaceBypass } from '@/auth/sign-in-up/hooks/useWorkspaceBypass';
 import { SignInUpStep } from '@/auth/states/signInUpStepState';
 import { workspaceAuthBypassProvidersState } from '@/workspace/states/workspaceAuthBypassProvidersState';
 import { workspaceAuthProvidersState } from '@/workspace/states/workspaceAuthProvidersState';
+import { SignInUpWithOidc } from '@/oidc-sso/components/SignInUpWithOidc';
 import { Trans } from '@lingui/react/macro';
 import { FormProvider } from 'react-hook-form';
 import { Separator } from 'twenty-ui/primitives/layout';
@@ -52,6 +53,8 @@ export const SignInUpWorkspaceScopeForm = () => {
         )}
 
         {providers.sso.length > 0 && <SignInUpWithSso />}
+
+        <SignInUpWithOidc />
 
         {(providers.google ||
           providers.microsoft ||
