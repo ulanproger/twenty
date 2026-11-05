@@ -23,14 +23,14 @@ Frontend: `packages/twenty-front/src/modules/oidc-sso/` (sign-in button, setting
 
 ## Seams (the only edits in upstream files)
 
-All are additive (0 deleted lines). `bash scripts/fork/check-oidc-seams.sh` enforces it, the allowed paths are in `scripts/fork/oidc-seams.txt`.
+All are additive (0 deleted lines) except S4, which rewrites the legacy SSO section and is listed in `MODIFYING_SEAMS`. `bash scripts/fork/check-oidc-seams.sh` enforces it, the allowed paths are in `scripts/fork/oidc-seams.txt`.
 
 | Seam | File | Change | On conflict |
 |---|---|---|---|
 | S1 | `engine/core-modules/core-engine.module.ts` | +1 import, +1 entry in `imports` next to `WorkspaceSsoModule` | keep upstream, re-add both lines |
 | S2 | `engine/core-modules/auth/auth.module.ts` | `AuthService` added to `exports` | keep upstream, re-add the export |
 | S3 | `database/commands/secret-encryption-rotation/constants/secret-encryption-rotation-site-entries.constant.ts` | +1 entry for the provider secret column | keep upstream, re-add the entry |
-| S4 | `twenty-front/.../SettingsSecuritySettings.tsx` | +1 import, `<SettingsOidcProvidersSection />` outside the SSO entitlement check | keep upstream, re-add both |
+| S4 | `twenty-front/.../SettingsSecuritySettings.tsx` | +1 import, `<SettingsOidcProvidersSection />` outside the SSO entitlement check; the legacy SSO section is wrapped in `{hasSsoEntitlement && (...)}` and its upgrade card is removed (+11/-17) | keep upstream, re-wrap the legacy section in `{hasSsoEntitlement && (...)}` without the upgrade card, re-add the import and the section after it |
 | S5 | `twenty-front/.../SignInUpWorkspaceScopeForm.tsx` | +1 import, `{!shouldUseBypass && <SignInUpWithOidc />}` | keep upstream, re-add both |
 | S7 | `test/integration/endpoint-permissions/__snapshots__/endpoint-permission-declarations.integration-spec.ts.snap` | entries for our controller and resolvers | regenerate, do not hand-edit (see below) |
 
