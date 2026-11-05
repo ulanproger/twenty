@@ -12,7 +12,7 @@ OWN_PREFIXES=(
   "scripts/fork/"
   "docs/oidc-sso/"
 )
-OWN_FILES=("docs/oidc-sso-roadmap.md")
+OWN_FILES=("docs/oidc-sso-roadmap.md" ".github/workflows/fork-build-ghcr-image.yaml")
 
 if [ "${1:-}" = "--numstat-from" ] && [ "${2:-}" = "-" ]; then
   numstat="$(cat)"
