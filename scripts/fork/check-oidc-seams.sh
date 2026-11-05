@@ -10,6 +10,7 @@ OWN_PREFIXES=(
   "packages/twenty-server/src/engine/core-modules/oidc-sso/"
   "packages/twenty-front/src/modules/oidc-sso/"
   "scripts/fork/"
+  "docs/oidc-sso/"
 )
 OWN_FILES=("docs/oidc-sso-roadmap.md")
 # Seams that rewrite upstream lines (S4 hides the Enterprise SSO gate card), so deletions are allowed
