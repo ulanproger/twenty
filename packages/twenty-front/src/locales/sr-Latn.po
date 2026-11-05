@@ -987,6 +987,11 @@ msgstr "{selectedCount, plural, one {Obriši {selectedCount} posao} few {Obriši
 msgid "{selectedCount, plural, one {Retry {selectedCount} Job} other {Retry {selectedCount} Jobs}}"
 msgstr "{selectedCount, plural, one {Ponovi {selectedCount} posao} few {Ponovi {selectedCount} posla} other {Ponovi {selectedCount} poslova}}"
 
+#. js-lingui-id: saqVE2
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+msgid "{selectedCount} selected"
+msgstr ""
+
 #. js-lingui-id: px4Svg
 #: src/modules/log-console/components/LogConsoleToolbar.tsx
 msgid "{selectedOptionCount} options"
@@ -1676,6 +1681,7 @@ msgid "Actions users can perform on this object"
 msgstr "Akcije koje korisnici mogu sprovesti na ovom objektu"
 
 #. js-lingui-id: FQBaXG
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/settings/admin-panel/ai/components/SettingsAdminAI.tsx
 #: src/modules/settings/admin-panel/ai/components/SettingsAdminAI.tsx
 #: src/modules/settings/data-model/object-details/components/SettingsObjectFieldDisabledActionDropdown.tsx
@@ -1715,6 +1721,7 @@ msgstr "Aktiviranje..."
 #: src/modules/object-core/agents/components/CoreAgentTriggerCard.tsx
 #: src/modules/object-core/workflows/constants/CoreWorkflowStatusFilterOptions.ts
 #: src/modules/object-core/workflows/versions/constants/CoreWorkflowVersionStatusLabels.ts
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceBillingContent.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceCreditGrantsTable.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
@@ -1764,6 +1771,7 @@ msgstr "Akter"
 #. js-lingui-id: m16xKo
 #: src/modules/navigation-menu-item/display/sections/favorites/components/FavoritesSection.tsx
 #: src/modules/navigation-menu-item/display/sections/workspace/components/WorkspaceSection.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
 #: src/modules/settings/data-model/object-details/components/SettingsObjectFieldItemTableRow.tsx
 msgid "Add"
 msgstr "Dodajte"
@@ -2150,6 +2158,12 @@ msgstr "Dodajte objekat"
 #: src/pages/settings/members/roles/SettingsRoleAddObjectLevel.tsx
 msgid "Add object permission"
 msgstr "Dodajte dozvolu objekta"
+
+#. js-lingui-id: 3JpREs
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProvidersSection.tsx
+msgid "Add OIDC provider"
+msgstr ""
 
 #. js-lingui-id: Dl5lVI
 #: src/modules/settings/data-model/fields/forms/select/components/SettingsDataModelFieldSelectForm.tsx
@@ -3922,6 +3936,11 @@ msgstr "Dodeljeno korisniku {assigneeName}"
 msgid "Assigned to users who join via invite link, approved domain, or SSO, and used as fallback when an assigned role is deleted"
 msgstr "Dodeljuje se korisnicima koji se pridruže putem linka za poziv, odobrenog domena ili SSO, i koristi se kao rezervna opcija kada se obriše dodeljena uloga"
 
+#. js-lingui-id: 7RNUhk
+#: src/modules/ai/constants/AiChatThreadReasons.ts
+msgid "Assigned to you"
+msgstr ""
+
 #. js-lingui-id: ojKCLU
 #: src/modules/ai/components/AiChatThreadDetailsDropdown.tsx
 msgid "Assignee"
@@ -5007,6 +5026,7 @@ msgstr "Kanada"
 #: src/modules/applications/components/AuthorizeActionButtons.tsx
 #: src/modules/front-components/media-session/components/FrontComponentMediaSessionTooltipRow.tsx
 #: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsFooter.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceCreditGrantModal.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceUsageLimitModal.tsx
 #: src/modules/settings/billing/components/AddCreditCardModal.tsx
@@ -5090,6 +5110,11 @@ msgstr "Otkaži snimanje za {applicationName}"
 msgid "Cancel reply"
 msgstr "Otkaži odgovor"
 
+#. js-lingui-id: 624oKO
+#: src/modules/settings/billing/hooks/useBillingPlanActions.ts
+msgid "Cancel switch"
+msgstr ""
+
 #. js-lingui-id: N6gPiD
 #: src/modules/settings/billing/components/SettingsBillingContent.tsx
 #: src/pages/settings/enterprise/SettingsEnterprise.tsx
@@ -5109,6 +5134,7 @@ msgid "Canceled at"
 msgstr "Otkazano u"
 
 #. js-lingui-id: vv7kpg
+#: src/modules/ai/constants/AiChatThreadReasons.ts
 #: src/modules/object-core/agents/components/CoreAgentRunStatus.tsx
 msgid "Cancelled"
 msgstr "Otkazano"
@@ -5255,6 +5281,11 @@ msgstr "Kontrole ćelije"
 #: src/modules/settings/app-preferences/components/SettingsConnectedAccountSyncStatus.tsx
 msgid "Certificate invalid"
 msgstr "Sertifikat je nevažeći"
+
+#. js-lingui-id: o+XJ9D
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
+msgid "Change"
+msgstr ""
 
 #. js-lingui-id: tHntRt
 #: src/modules/blocknote-editor/components/CustomSideMenu.tsx
@@ -5689,6 +5720,7 @@ msgid "Clear search, go back, or close"
 msgstr "Obrišite pretragu, vratite se nazad ili zatvorite"
 
 #. js-lingui-id: FBIuPX
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
 #: src/modules/ai/components/AiChatInboxSelectionPane.tsx
 #: src/modules/keyboard-shortcut-menu/constants/KeyboardShortcutsTable.ts
 msgid "Clear selection"
@@ -5778,10 +5810,16 @@ msgid "ClickHouse Not Configured"
 msgstr "ClickHouse nije podešen"
 
 #. js-lingui-id: b9Y4up
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
 #: src/modules/settings/security/components/sso/SettingsSsoOidcForm.tsx
 #: src/pages/settings/applications/tabs/SettingsApplicationRegistrationOAuthTab.tsx
 msgid "Client ID"
 msgstr "Identifikator klijenta"
+
+#. js-lingui-id: 4uVADI
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
+msgid "Client secret"
+msgstr ""
 
 #. js-lingui-id: Bdj4LI
 #: src/modules/settings/security/components/sso/SettingsSsoOidcForm.tsx
@@ -8272,6 +8310,7 @@ msgid "Days between triggers"
 msgstr "Dani između okidača"
 
 #. js-lingui-id: 5y3O+A
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/settings/data-model/object-details/components/tabs/ObjectSettings.tsx
 #: src/modules/settings/security/components/sso/SettingsSecuritySsoRowDropdownMenu.tsx
 #: src/pages/settings/ai/components/SettingsSkillDangerZone.tsx
@@ -8452,6 +8491,8 @@ msgstr "obriši"
 #: src/modules/blocknote-editor/components/CustomSideMenu.tsx
 #: src/modules/object-record/record-field-list/record-detail-section/relation/components/RecordDetailRelationRecordsListItem.tsx
 #: src/modules/object-record/record-field/ui/meta-types/input/components/MultiItemFieldMenuItem.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/page-layout/widgets/fields/components/FieldsConfigurationGroupDropdown.tsx
 #: src/modules/page-layout/widgets/standalone-rich-text/components/DashboardEditorSideMenu.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminDeleteJobsConfirmationModal.tsx
@@ -8638,6 +8679,11 @@ msgstr "Obrišite ograničenje"
 #: src/modules/workflow/workflow-steps/components/WorkflowStepOptionsMenuItems.tsx
 msgid "Delete node"
 msgstr "Obrišite čvor"
+
+#. js-lingui-id: Zge7pM
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
+msgid "Delete OIDC provider"
+msgstr ""
 
 #. js-lingui-id: ik4oY8
 #: src/modules/workflow/workflow-steps/workflow-actions/classify-action/components/WorkflowClassifyQuestionCriteria.tsx
@@ -9261,6 +9307,8 @@ msgid "Don't import events marked as private"
 msgstr "Ne uvozi događaje označene kao privatne"
 
 #. js-lingui-id: DPfwMq
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
 #: src/modules/ai/constants/AgentChatThreadFilterStatusLabels.ts
 #: src/modules/object-core/agents/components/CoreAgentRunStatus.tsx
 #: src/modules/page-layout/widgets/fields/components/FieldsConfigurationGroupRenameInput.tsx
@@ -9335,7 +9383,7 @@ msgstr "Preuzmi primer"
 
 #. js-lingui-id: eneWvv
 #: src/modules/activities/emails/components/EmailThreadPreview.tsx
-#: src/modules/ai/components/AiChatThreadSubtitle.tsx
+#: src/modules/ai/constants/AiChatThreadReasons.ts
 #: src/modules/object-core/workflows/constants/CoreWorkflowStatusFilterOptions.ts
 #: src/modules/object-core/workflows/versions/constants/CoreWorkflowVersionStatusLabels.ts
 #: src/modules/workflow/workflow-diagram/utils/getWorkflowVersionStatusTagProps.ts
@@ -11232,6 +11280,7 @@ msgstr "Izuzetno pametno"
 #. js-lingui-id: 7Bj3x9
 #: src/modules/activities/calendar/components/CalendarEventCallRecorderAvatar.tsx
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
+#: src/modules/ai/constants/AiChatThreadReasons.ts
 #: src/modules/object-core/agents/components/CoreAgentRunStatus.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminChatToolCallPart.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceContent.tsx
@@ -12197,6 +12246,11 @@ msgstr "Završite proces sa greškama"
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepCalendar.tsx
 msgid "Finish Setup"
 msgstr "Završite podešavanje"
+
+#. js-lingui-id: 4dQFvz
+#: src/modules/ai/constants/AiChatThreadReasons.ts
+msgid "Finished"
+msgstr ""
 
 #. js-lingui-id: USZ2N6
 #: src/modules/localization/hooks/useLocaleOptions.ts
@@ -13740,6 +13794,7 @@ msgid "In-Reply-To"
 msgstr "In-Reply-To"
 
 #. js-lingui-id: NoNwIX
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/settings/data-model/object-details/components/SettingsObjectFieldTable.tsx
 #: src/modules/settings/data-model/object-details/components/SettingsObjectRelationsTable.tsx
 #: src/modules/settings/data-model/object-details/components/tabs/SettingsObjectValidationRulesSection.tsx
@@ -14412,6 +14467,11 @@ msgstr "Je danas{timeZoneAbbreviationSuffix}"
 msgid "Issuer URI"
 msgstr "Izdavalac URI"
 
+#. js-lingui-id: kGgyNR
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
+msgid "Issuer URL"
+msgstr ""
+
 #. js-lingui-id: Lj7sBL
 #: src/modules/localization/hooks/useLocaleOptions.ts
 msgid "Italian"
@@ -15021,6 +15081,7 @@ msgstr "Levo"
 
 #. js-lingui-id: Sn1jT8
 #: src/modules/settings/admin-panel/signing-keys/components/SettingsAdminSigningKeysTable.tsx
+#: src/modules/settings/billing/components/internal/SettingsBillingPlanComparisonTable.tsx
 msgid "Legacy"
 msgstr "Zastarelo"
 
@@ -15074,6 +15135,11 @@ msgstr "Omogućite ljudima da ograničavaju i dele pojedinačne zapise."
 #: src/modules/settings/members/components/MemberTwoFactorAuthenticationRecoverySection.tsx
 msgid "Let this member sign in again if they lost their authenticator app"
 msgstr "Omogućite ovom članu da se ponovo prijavi ako je izgubio aplikaciju za autentifikaciju"
+
+#. js-lingui-id: nobJhT
+#: src/modules/oidc-sso/components/SettingsOidcProvidersSection.tsx
+msgid "Let users sign in with your OpenID Connect provider"
+msgstr ""
 
 #. js-lingui-id: RIWS8s
 #: src/modules/onboarding/components/WorkspaceSetupChatPreamble.tsx
@@ -15918,6 +15984,11 @@ msgstr "Ručno izabrano za ovaj režim."
 msgid "Margin"
 msgstr "Margina"
 
+#. js-lingui-id: SYhBoR
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+msgid "Mark all done"
+msgstr ""
+
 #. js-lingui-id: yYix7P
 #: src/modules/keyboard-shortcut-menu/constants/KeyboardShortcutsGeneral.ts
 msgid "Mark as favourite"
@@ -16133,6 +16204,11 @@ msgstr "Članovi - Podešavanja"
 #: src/modules/settings/security/components/SettingsSecurityAuthProvidersOptionsList.tsx
 msgid "Members & invitees"
 msgstr "Članovi i pozvani"
+
+#. js-lingui-id: pbIEgB
+#: src/modules/ai/constants/AiChatThreadReasons.ts
+msgid "Mentioned you"
+msgstr ""
 
 #. js-lingui-id: /bZzdR
 #: src/modules/ai/constants/AgentChatThreadFilterStatusLabels.ts
@@ -16508,6 +16584,7 @@ msgstr "Naprednija polja za napredne projekte"
 #: src/modules/object-record/record-group/components/RecordGroupAggregateDropdownContent.tsx
 #: src/modules/object-record/record-table/record-table-footer/components/RecordTableColumnAggregateFooterDropdownContent.tsx
 #: src/modules/object-record/record-table/record-table-footer/components/RecordTableColumnAggregateFooterMenuContent.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/page-layout/widgets/fields/components/FieldsConfigurationGroupDropdown.tsx
 #: src/modules/settings/accounts/components/SettingsAccountsRowDropdownMenu.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminServerAdminAccess.tsx
@@ -16695,6 +16772,7 @@ msgstr "Nije dostupno"
 #: src/modules/object-core/agents/constants/CoreAgentTableColumns.tsx
 #: src/modules/object-core/workflows/constants/CoreWorkflowFilterFields.ts
 #: src/modules/object-core/workflows/constants/WorkflowCoreTableColumns.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
 #: src/modules/settings/accounts/components/SettingsAccountsConnectionForm.tsx
 #: src/modules/settings/admin-panel/apps/components/SettingsAdminApps.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminGeneral.tsx
@@ -16827,8 +16905,8 @@ msgid "Needs a Select field"
 msgstr "Potrebno je polje za izbor"
 
 #. js-lingui-id: k3/EHQ
-#: src/modules/ai/components/AiChatThreadSubtitle.tsx
 #: src/modules/ai/constants/AgentChatThreadFilterStatusLabels.ts
+#: src/modules/ai/constants/AiChatThreadReasons.ts
 msgid "Needs input"
 msgstr "Potreban je unos"
 
@@ -18530,6 +18608,11 @@ msgstr "Ofset"
 msgid "Offset cannot be negative."
 msgstr "Ofset ne može biti negativan."
 
+#. js-lingui-id: 8MSqMp
+#: src/modules/oidc-sso/components/SettingsOidcProvidersSection.tsx
+msgid "OIDC"
+msgstr ""
+
 #. js-lingui-id: zga9sT
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/hooks/useTestHttpRequest.ts
 msgid "OK"
@@ -19671,6 +19754,11 @@ msgstr "Izaberite zapis za {0}"
 #: src/modules/side-panel/pages/email-block-settings/components/EmailColorInput.tsx
 msgid "Pick a color"
 msgstr "Izaberite boju"
+
+#. js-lingui-id: B8mlc2
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+msgid "Pick a date"
+msgstr ""
 
 #. js-lingui-id: T1yaeQ
 #: src/modules/activities/emails/utils/buildCampaignDeliveryHint.ts
@@ -20941,6 +21029,11 @@ msgstr "Region u kom se obrađuju podaci za inferenciju (opcionalno)"
 msgid "Register as development instance"
 msgstr "Registruj kao razvojnu instancu"
 
+#. js-lingui-id: to40wZ
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
+msgid "Register this redirect URI in your identity provider: {redirectUri}"
+msgstr ""
+
 #. js-lingui-id: ARGZDy
 #: src/pages/settings/enterprise/SettingsEnterprise.tsx
 msgid "Registered as a development instance. This instance will not be billed."
@@ -21298,6 +21391,11 @@ msgstr "Datum obnove"
 msgid "Renews on"
 msgstr "Obnavlja se"
 
+#. js-lingui-id: M7SqjM
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
+msgid "Reopen"
+msgstr ""
+
 #. js-lingui-id: co4jwi
 #. placeholder {0}: tab.title
 #: src/modules/page-layout/components/PageLayoutTabMenuItemSelectAvatar.tsx
@@ -21335,6 +21433,7 @@ msgid "Replit install links require an HTTPS MCP URL."
 msgstr "Replit linkovi za instalaciju zahtevaju HTTPS MCP URL."
 
 #. js-lingui-id: ImOQa9
+#: src/modules/ai/components/AiChatThreadRequestActions.tsx
 #: src/modules/object-core/agents/components/CoreAgentRunDetails.tsx
 #: src/modules/page-layout/widgets/email-thread/components/EmailThreadComposer.tsx
 #: src/modules/side-panel/hooks/useOpenComposeEmailInSidePanel.ts
@@ -21535,6 +21634,11 @@ msgstr "Tip resursa"
 #: src/modules/settings/applications/components/SettingsApplicationAboutSidebar.tsx
 msgid "Resources"
 msgstr "რესურსები"
+
+#. js-lingui-id: qrqIfV
+#: src/modules/ai/components/AiChatThreadRequestActions.tsx
+msgid "Respond to request"
+msgstr ""
 
 #. js-lingui-id: ZlCDf+
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/components/HttpRequestExecutionResult.tsx
@@ -22930,7 +23034,7 @@ msgid "Select an option"
 msgstr "Izaberite opciju"
 
 #. js-lingui-id: 0yxhOL
-#: src/modules/ai/components/AiChatThreadListItem.tsx
+#: src/modules/ai/components/AiChatThreadRow.tsx
 msgid "Select chat"
 msgstr "Izaberi čet"
 
@@ -23077,6 +23181,11 @@ msgstr "Izaberite članove radnog prostora"
 #: src/pages/settings/profile/appearance/components/SettingsExperience.tsx
 msgid "Select your language and adjust the size of the interface"
 msgstr "Izaberite jezik i podesite veličinu interfejsa"
+
+#. js-lingui-id: CRzfBf
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+msgid "Selected chats"
+msgstr ""
 
 #. js-lingui-id: AM0pWl
 #: src/modules/settings/components/__stories__/SettingsRadioCards.stories.tsx
@@ -23733,6 +23842,11 @@ msgstr "Prijavite se iz pregledača i postavite ovaj radni prostor kao podrazume
 msgid "Sign in or Create an account"
 msgstr "Prijavite se ili kreirajte nalog"
 
+#. js-lingui-id: mkNBD/
+#: src/modules/oidc-sso/components/SignInUpWithOidc.tsx
+msgid "Sign in with {name}"
+msgstr ""
+
 #. js-lingui-id: e+RpCP
 #: src/modules/auth/sign-in-up/components/internal/SignInUpWithCredentials.tsx
 msgid "Sign up"
@@ -23958,9 +24072,17 @@ msgid "smtp.example.com"
 msgstr "smtp.example.com"
 
 #. js-lingui-id: 7+i6oV
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
 #: src/modules/side-panel/hooks/useOpenSnoozeAiChatInSidePanel.ts
 msgid "Snooze"
 msgstr "Odloži"
+
+#. js-lingui-id: aqkwib
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+msgid "Snooze chat"
+msgstr ""
 
 #. js-lingui-id: xKw3A1
 #: src/modules/ai/components/AiChatThreadActivityTime.tsx
@@ -24009,6 +24131,11 @@ msgstr "Neke izmene rasporeda nisu mogle biti sačuvane"
 #: src/modules/workflow/workflow-steps/workflow-actions/components/WorkflowRunStepLogsDetail.tsx
 msgid "Some log data was dropped to fit the size limit ({0} entries, {1} bytes)."
 msgstr "Deo podataka loga je odbačen da bi se ispoštovalo ograničenje veličine ({0} unosa, {1} bajtova)."
+
+#. js-lingui-id: 2c+W2z
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+msgid "Someone replies"
+msgstr ""
 
 #. js-lingui-id: nwtY4N
 #: src/modules/object-core/components/CoreObjectIndexPageLayout.tsx
@@ -24779,6 +24906,11 @@ msgstr "Podržava rezonovanje"
 msgid "Swedish"
 msgstr "Švedski"
 
+#. js-lingui-id: M7wPsD
+#: src/modules/settings/billing/hooks/useBillingPlanActions.ts
+msgid "Switch"
+msgstr ""
+
 #. js-lingui-id: 3D7mFh
 #: src/modules/settings/billing/hooks/useBillingPlanActions.ts
 msgid "Switch to {planLabel}"
@@ -24821,6 +24953,7 @@ msgid "Sync"
 msgstr "Sinhronizuj"
 
 #. js-lingui-id: NmHVSC
+#: src/pages/settings/applications/components/SettingsClaimApplicationSection.tsx
 #: src/pages/settings/applications/components/SettingsClaimApplicationSection.tsx
 msgid "Sync catalog"
 msgstr "Sinhronizuj katalog"
@@ -27226,6 +27359,7 @@ msgid "Until {snoozedUntilDay}"
 msgstr "Do {snoozedUntilDay}"
 
 #. js-lingui-id: wja8aL
+#: src/modules/ai/components/AiChatThreadListItem.tsx
 #: src/modules/ai/components/AiChatThreadTitle.tsx
 #: src/modules/log-console/components/LogConsoleDetailPanel.tsx
 #: src/modules/log-console/components/LogConsoleRecordCell.tsx
@@ -27454,6 +27588,7 @@ msgstr "Ažuriranje..."
 #: src/modules/information-banner/components/billing/InformationBannerNoMoreCredits.tsx
 #: src/modules/log-console/components/LogConsole.tsx
 #: src/modules/settings/billing/components/internal/ResourceCreditPriceSelector.tsx
+#: src/modules/settings/billing/hooks/useBillingPlanActions.ts
 #: src/modules/settings/event-logs/components/SettingsLogs.tsx
 #: src/modules/settings/roles/role-permissions/object-level-permissions/record-level-permissions/components/SettingsRolePermissionsObjectLevelRecordLevelSection.tsx
 msgid "Upgrade"
@@ -27966,6 +28101,12 @@ msgstr "Radni prostori korisnika"
 msgid "Users"
 msgstr "Korisnici"
 
+#. js-lingui-id: BtbgpK
+#. placeholder {0}: provider.name
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
+msgid "Users will no longer be able to sign in through {0}."
+msgstr ""
+
 #. js-lingui-id: zCO0/Y
 #: src/modules/settings/admin-panel/components/SettingsAdminServerAdmins.tsx
 msgid "Users with server-level access. Open a user to grant or revoke access; use the search below to find anyone."
@@ -28468,6 +28609,11 @@ msgstr "Čeka se dozvola"
 msgid "Waiting for your approval"
 msgstr "Čeka se vaše odobrenje"
 
+#. js-lingui-id: rZmwg4
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
+msgid "Wake now"
+msgstr ""
+
 #. js-lingui-id: THYlSm
 #: src/pages/settings/ai/SettingsAI.tsx
 #: src/pages/settings/applications/SettingsApplications.tsx
@@ -28798,6 +28944,11 @@ msgstr "Šta ovaj API može: Izaberite korisničku ulogu da definišete njene do
 #: src/pages/settings/communications/SettingsWorkspaceCommunications.tsx
 msgid "Whatsapp"
 msgstr "Whatsapp"
+
+#. js-lingui-id: 8ssTdk
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+msgid "When {assistantName} finishes"
+msgstr ""
 
 #. js-lingui-id: m7GziZ
 #: src/modules/ai/components/suggested-prompts/default-suggested-prompts.ts

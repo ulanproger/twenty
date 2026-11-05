@@ -3294,6 +3294,11 @@ msgstr "找不到此索引对应的对象。"
 msgid "Could not found updated field metadata"
 msgstr "找不到已更新的字段元数据。"
 
+#. js-lingui-id: 2c9+5c
+#: src/engine/core-modules/oidc-sso/oidc-sso.exception.ts
+msgid "Could not load the OpenID configuration from the issuer."
+msgstr ""
+
 #. js-lingui-id: g5pJGG
 #. placeholder {0}: flatFieldMetadata.objectMetadataUniversalIdentifier
 #: src/engine/metadata-modules/metadata-side-effect/handlers/field-metadata/utils/build-field-side-effect-parent-not-found-failure.util.ts
@@ -6103,6 +6108,7 @@ msgid "Identity provider already exists."
 msgstr "身份提供商已存在。"
 
 #. js-lingui-id: 6cVc+b
+#: src/engine/core-modules/oidc-sso/oidc-sso.exception.ts
 #: src/engine/core-modules/sso/sso.exception.ts
 msgid "Identity provider not found."
 msgstr "未找到身份提供商。"
@@ -6625,6 +6631,7 @@ msgid "Invalid issuer URL: {reason}"
 msgstr "无效的发行者 URL：{reason}"
 
 #. js-lingui-id: 4MWDA2
+#: src/engine/core-modules/oidc-sso/oidc-sso.exception.ts
 #: src/engine/core-modules/sso/sso.exception.ts
 msgid "Invalid issuer URL."
 msgstr "无效的发行者 URL。"
@@ -13585,6 +13592,11 @@ msgstr "此服务器路由不允许使用此 HTTP 方法。"
 #: src/engine/metadata-modules/metadata-side-effect/utils/map-system-side-effect-collision-to-failure.util.ts
 msgid "This identifier is reserved by the system"
 msgstr "此标识符由系统保留"
+
+#. js-lingui-id: feHT+t
+#: src/engine/core-modules/oidc-sso/oidc-sso.exception.ts
+msgid "This identity provider is already configured."
+msgstr ""
 
 #. js-lingui-id: 7f5dRA
 #: src/engine/metadata-modules/index-metadata/services/index-metadata.service.ts

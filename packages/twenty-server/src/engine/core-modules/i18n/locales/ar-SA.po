@@ -3294,6 +3294,11 @@ msgstr "تعذر العثور على الكائن لهذا الفهرس."
 msgid "Could not found updated field metadata"
 msgstr "لا يمكن العثور على البيانات الوصفية للحقل الذي تم تحديثه"
 
+#. js-lingui-id: 2c9+5c
+#: src/engine/core-modules/oidc-sso/oidc-sso.exception.ts
+msgid "Could not load the OpenID configuration from the issuer."
+msgstr ""
+
 #. js-lingui-id: g5pJGG
 #. placeholder {0}: flatFieldMetadata.objectMetadataUniversalIdentifier
 #: src/engine/metadata-modules/metadata-side-effect/handlers/field-metadata/utils/build-field-side-effect-parent-not-found-failure.util.ts
@@ -6103,6 +6108,7 @@ msgid "Identity provider already exists."
 msgstr "موفر الهوية موجود بالفعل."
 
 #. js-lingui-id: 6cVc+b
+#: src/engine/core-modules/oidc-sso/oidc-sso.exception.ts
 #: src/engine/core-modules/sso/sso.exception.ts
 msgid "Identity provider not found."
 msgstr "موفّر الهوية غير موجود."
@@ -6625,6 +6631,7 @@ msgid "Invalid issuer URL: {reason}"
 msgstr "رابط URL للجهة المصدرة غير صالح: {reason}"
 
 #. js-lingui-id: 4MWDA2
+#: src/engine/core-modules/oidc-sso/oidc-sso.exception.ts
 #: src/engine/core-modules/sso/sso.exception.ts
 msgid "Invalid issuer URL."
 msgstr "عنوان URL للجهة المُصدِرة غير صالح."
@@ -13585,6 +13592,11 @@ msgstr "طريقة HTTP هذه غير مسموح بها على مسار الخا
 #: src/engine/metadata-modules/metadata-side-effect/utils/map-system-side-effect-collision-to-failure.util.ts
 msgid "This identifier is reserved by the system"
 msgstr "هذا المعرّف محجوز من قِبل النظام"
+
+#. js-lingui-id: feHT+t
+#: src/engine/core-modules/oidc-sso/oidc-sso.exception.ts
+msgid "This identity provider is already configured."
+msgstr ""
 
 #. js-lingui-id: 7f5dRA
 #: src/engine/metadata-modules/index-metadata/services/index-metadata.service.ts

@@ -982,6 +982,11 @@ msgstr ""
 msgid "{selectedCount, plural, one {Retry {selectedCount} Job} other {Retry {selectedCount} Jobs}}"
 msgstr ""
 
+#. js-lingui-id: saqVE2
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+msgid "{selectedCount} selected"
+msgstr ""
+
 #. js-lingui-id: px4Svg
 #: src/modules/log-console/components/LogConsoleToolbar.tsx
 msgid "{selectedOptionCount} options"
@@ -1671,6 +1676,7 @@ msgid "Actions users can perform on this object"
 msgstr ""
 
 #. js-lingui-id: FQBaXG
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/settings/admin-panel/ai/components/SettingsAdminAI.tsx
 #: src/modules/settings/admin-panel/ai/components/SettingsAdminAI.tsx
 #: src/modules/settings/data-model/object-details/components/SettingsObjectFieldDisabledActionDropdown.tsx
@@ -1710,6 +1716,7 @@ msgstr ""
 #: src/modules/object-core/agents/components/CoreAgentTriggerCard.tsx
 #: src/modules/object-core/workflows/constants/CoreWorkflowStatusFilterOptions.ts
 #: src/modules/object-core/workflows/versions/constants/CoreWorkflowVersionStatusLabels.ts
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceBillingContent.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceCreditGrantsTable.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminQueueJobsTable.tsx
@@ -1759,6 +1766,7 @@ msgstr ""
 #. js-lingui-id: m16xKo
 #: src/modules/navigation-menu-item/display/sections/favorites/components/FavoritesSection.tsx
 #: src/modules/navigation-menu-item/display/sections/workspace/components/WorkspaceSection.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
 #: src/modules/settings/data-model/object-details/components/SettingsObjectFieldItemTableRow.tsx
 msgid "Add"
 msgstr ""
@@ -2144,6 +2152,12 @@ msgstr ""
 #: src/pages/settings/members/roles/SettingsRoleAddObjectLevel.tsx
 #: src/pages/settings/members/roles/SettingsRoleAddObjectLevel.tsx
 msgid "Add object permission"
+msgstr ""
+
+#. js-lingui-id: 3JpREs
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProvidersSection.tsx
+msgid "Add OIDC provider"
 msgstr ""
 
 #. js-lingui-id: Dl5lVI
@@ -3917,6 +3931,11 @@ msgstr ""
 msgid "Assigned to users who join via invite link, approved domain, or SSO, and used as fallback when an assigned role is deleted"
 msgstr ""
 
+#. js-lingui-id: 7RNUhk
+#: src/modules/ai/constants/AiChatThreadReasons.ts
+msgid "Assigned to you"
+msgstr ""
+
 #. js-lingui-id: ojKCLU
 #: src/modules/ai/components/AiChatThreadDetailsDropdown.tsx
 msgid "Assignee"
@@ -5002,6 +5021,7 @@ msgstr ""
 #: src/modules/applications/components/AuthorizeActionButtons.tsx
 #: src/modules/front-components/media-session/components/FrontComponentMediaSessionTooltipRow.tsx
 #: src/modules/object-record/record-update-multiple/components/UpdateMultipleRecordsFooter.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceCreditGrantModal.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceUsageLimitModal.tsx
 #: src/modules/settings/billing/components/AddCreditCardModal.tsx
@@ -5085,6 +5105,11 @@ msgstr ""
 msgid "Cancel reply"
 msgstr ""
 
+#. js-lingui-id: 624oKO
+#: src/modules/settings/billing/hooks/useBillingPlanActions.ts
+msgid "Cancel switch"
+msgstr ""
+
 #. js-lingui-id: N6gPiD
 #: src/modules/settings/billing/components/SettingsBillingContent.tsx
 #: src/pages/settings/enterprise/SettingsEnterprise.tsx
@@ -5104,6 +5129,7 @@ msgid "Canceled at"
 msgstr ""
 
 #. js-lingui-id: vv7kpg
+#: src/modules/ai/constants/AiChatThreadReasons.ts
 #: src/modules/object-core/agents/components/CoreAgentRunStatus.tsx
 msgid "Cancelled"
 msgstr ""
@@ -5249,6 +5275,11 @@ msgstr ""
 #. js-lingui-id: nejZ6P
 #: src/modules/settings/app-preferences/components/SettingsConnectedAccountSyncStatus.tsx
 msgid "Certificate invalid"
+msgstr ""
+
+#. js-lingui-id: o+XJ9D
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
+msgid "Change"
 msgstr ""
 
 #. js-lingui-id: tHntRt
@@ -5684,6 +5715,7 @@ msgid "Clear search, go back, or close"
 msgstr ""
 
 #. js-lingui-id: FBIuPX
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
 #: src/modules/ai/components/AiChatInboxSelectionPane.tsx
 #: src/modules/keyboard-shortcut-menu/constants/KeyboardShortcutsTable.ts
 msgid "Clear selection"
@@ -5773,9 +5805,15 @@ msgid "ClickHouse Not Configured"
 msgstr ""
 
 #. js-lingui-id: b9Y4up
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
 #: src/modules/settings/security/components/sso/SettingsSsoOidcForm.tsx
 #: src/pages/settings/applications/tabs/SettingsApplicationRegistrationOAuthTab.tsx
 msgid "Client ID"
+msgstr ""
+
+#. js-lingui-id: 4uVADI
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
+msgid "Client secret"
 msgstr ""
 
 #. js-lingui-id: Bdj4LI
@@ -8267,6 +8305,7 @@ msgid "Days between triggers"
 msgstr ""
 
 #. js-lingui-id: 5y3O+A
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/settings/data-model/object-details/components/tabs/ObjectSettings.tsx
 #: src/modules/settings/security/components/sso/SettingsSecuritySsoRowDropdownMenu.tsx
 #: src/pages/settings/ai/components/SettingsSkillDangerZone.tsx
@@ -8447,6 +8486,8 @@ msgstr ""
 #: src/modules/blocknote-editor/components/CustomSideMenu.tsx
 #: src/modules/object-record/record-field-list/record-detail-section/relation/components/RecordDetailRelationRecordsListItem.tsx
 #: src/modules/object-record/record-field/ui/meta-types/input/components/MultiItemFieldMenuItem.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/page-layout/widgets/fields/components/FieldsConfigurationGroupDropdown.tsx
 #: src/modules/page-layout/widgets/standalone-rich-text/components/DashboardEditorSideMenu.tsx
 #: src/modules/settings/admin-panel/health-status/components/SettingsAdminDeleteJobsConfirmationModal.tsx
@@ -8632,6 +8673,11 @@ msgstr ""
 #. js-lingui-id: Wk+A9S
 #: src/modules/workflow/workflow-steps/components/WorkflowStepOptionsMenuItems.tsx
 msgid "Delete node"
+msgstr ""
+
+#. js-lingui-id: Zge7pM
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
+msgid "Delete OIDC provider"
 msgstr ""
 
 #. js-lingui-id: ik4oY8
@@ -9256,6 +9302,8 @@ msgid "Don't import events marked as private"
 msgstr ""
 
 #. js-lingui-id: DPfwMq
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
 #: src/modules/ai/constants/AgentChatThreadFilterStatusLabels.ts
 #: src/modules/object-core/agents/components/CoreAgentRunStatus.tsx
 #: src/modules/page-layout/widgets/fields/components/FieldsConfigurationGroupRenameInput.tsx
@@ -9330,7 +9378,7 @@ msgstr ""
 
 #. js-lingui-id: eneWvv
 #: src/modules/activities/emails/components/EmailThreadPreview.tsx
-#: src/modules/ai/components/AiChatThreadSubtitle.tsx
+#: src/modules/ai/constants/AiChatThreadReasons.ts
 #: src/modules/object-core/workflows/constants/CoreWorkflowStatusFilterOptions.ts
 #: src/modules/object-core/workflows/versions/constants/CoreWorkflowVersionStatusLabels.ts
 #: src/modules/workflow/workflow-diagram/utils/getWorkflowVersionStatusTagProps.ts
@@ -11191,6 +11239,7 @@ msgstr ""
 #. js-lingui-id: 7Bj3x9
 #: src/modules/activities/calendar/components/CalendarEventCallRecorderAvatar.tsx
 #: src/modules/ai/components/CodeExecutionDisplay.tsx
+#: src/modules/ai/constants/AiChatThreadReasons.ts
 #: src/modules/object-core/agents/components/CoreAgentRunStatus.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminChatToolCallPart.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminWorkspaceContent.tsx
@@ -12155,6 +12204,11 @@ msgstr ""
 #. js-lingui-id: 8BwQeU
 #: src/pages/settings/accounts/SettingsAccountsConfigurationStepCalendar.tsx
 msgid "Finish Setup"
+msgstr ""
+
+#. js-lingui-id: 4dQFvz
+#: src/modules/ai/constants/AiChatThreadReasons.ts
+msgid "Finished"
 msgstr ""
 
 #. js-lingui-id: USZ2N6
@@ -13699,6 +13753,7 @@ msgid "In-Reply-To"
 msgstr ""
 
 #. js-lingui-id: NoNwIX
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/settings/data-model/object-details/components/SettingsObjectFieldTable.tsx
 #: src/modules/settings/data-model/object-details/components/SettingsObjectRelationsTable.tsx
 #: src/modules/settings/data-model/object-details/components/tabs/SettingsObjectValidationRulesSection.tsx
@@ -14371,6 +14426,11 @@ msgstr ""
 msgid "Issuer URI"
 msgstr ""
 
+#. js-lingui-id: kGgyNR
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
+msgid "Issuer URL"
+msgstr ""
+
 #. js-lingui-id: Lj7sBL
 #: src/modules/localization/hooks/useLocaleOptions.ts
 msgid "Italian"
@@ -14980,6 +15040,7 @@ msgstr ""
 
 #. js-lingui-id: Sn1jT8
 #: src/modules/settings/admin-panel/signing-keys/components/SettingsAdminSigningKeysTable.tsx
+#: src/modules/settings/billing/components/internal/SettingsBillingPlanComparisonTable.tsx
 msgid "Legacy"
 msgstr ""
 
@@ -15032,6 +15093,11 @@ msgstr ""
 #. js-lingui-id: HRo4g8
 #: src/modules/settings/members/components/MemberTwoFactorAuthenticationRecoverySection.tsx
 msgid "Let this member sign in again if they lost their authenticator app"
+msgstr ""
+
+#. js-lingui-id: nobJhT
+#: src/modules/oidc-sso/components/SettingsOidcProvidersSection.tsx
+msgid "Let users sign in with your OpenID Connect provider"
 msgstr ""
 
 #. js-lingui-id: RIWS8s
@@ -15877,6 +15943,11 @@ msgstr ""
 msgid "Margin"
 msgstr ""
 
+#. js-lingui-id: SYhBoR
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+msgid "Mark all done"
+msgstr ""
+
 #. js-lingui-id: yYix7P
 #: src/modules/keyboard-shortcut-menu/constants/KeyboardShortcutsGeneral.ts
 msgid "Mark as favourite"
@@ -16091,6 +16162,11 @@ msgstr ""
 #. js-lingui-id: q8ka1X
 #: src/modules/settings/security/components/SettingsSecurityAuthProvidersOptionsList.tsx
 msgid "Members & invitees"
+msgstr ""
+
+#. js-lingui-id: pbIEgB
+#: src/modules/ai/constants/AiChatThreadReasons.ts
+msgid "Mentioned you"
 msgstr ""
 
 #. js-lingui-id: /bZzdR
@@ -16467,6 +16543,7 @@ msgstr ""
 #: src/modules/object-record/record-group/components/RecordGroupAggregateDropdownContent.tsx
 #: src/modules/object-record/record-table/record-table-footer/components/RecordTableColumnAggregateFooterDropdownContent.tsx
 #: src/modules/object-record/record-table/record-table-footer/components/RecordTableColumnAggregateFooterMenuContent.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
 #: src/modules/page-layout/widgets/fields/components/FieldsConfigurationGroupDropdown.tsx
 #: src/modules/settings/accounts/components/SettingsAccountsRowDropdownMenu.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminServerAdminAccess.tsx
@@ -16654,6 +16731,7 @@ msgstr ""
 #: src/modules/object-core/agents/constants/CoreAgentTableColumns.tsx
 #: src/modules/object-core/workflows/constants/CoreWorkflowFilterFields.ts
 #: src/modules/object-core/workflows/constants/WorkflowCoreTableColumns.tsx
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
 #: src/modules/settings/accounts/components/SettingsAccountsConnectionForm.tsx
 #: src/modules/settings/admin-panel/apps/components/SettingsAdminApps.tsx
 #: src/modules/settings/admin-panel/components/SettingsAdminGeneral.tsx
@@ -16786,8 +16864,8 @@ msgid "Needs a Select field"
 msgstr ""
 
 #. js-lingui-id: k3/EHQ
-#: src/modules/ai/components/AiChatThreadSubtitle.tsx
 #: src/modules/ai/constants/AgentChatThreadFilterStatusLabels.ts
+#: src/modules/ai/constants/AiChatThreadReasons.ts
 msgid "Needs input"
 msgstr ""
 
@@ -18489,6 +18567,11 @@ msgstr ""
 msgid "Offset cannot be negative."
 msgstr ""
 
+#. js-lingui-id: 8MSqMp
+#: src/modules/oidc-sso/components/SettingsOidcProvidersSection.tsx
+msgid "OIDC"
+msgstr ""
+
 #. js-lingui-id: zga9sT
 #: src/modules/workflow/workflow-steps/workflow-actions/http-request-action/hooks/useTestHttpRequest.ts
 msgid "OK"
@@ -19629,6 +19712,11 @@ msgstr ""
 #. js-lingui-id: oWuONu
 #: src/modules/side-panel/pages/email-block-settings/components/EmailColorInput.tsx
 msgid "Pick a color"
+msgstr ""
+
+#. js-lingui-id: B8mlc2
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+msgid "Pick a date"
 msgstr ""
 
 #. js-lingui-id: T1yaeQ
@@ -20900,6 +20988,11 @@ msgstr ""
 msgid "Register as development instance"
 msgstr ""
 
+#. js-lingui-id: to40wZ
+#: src/modules/oidc-sso/components/SettingsOidcProviderCreateDialog.tsx
+msgid "Register this redirect URI in your identity provider: {redirectUri}"
+msgstr ""
+
 #. js-lingui-id: ARGZDy
 #: src/pages/settings/enterprise/SettingsEnterprise.tsx
 msgid "Registered as a development instance. This instance will not be billed."
@@ -21257,6 +21350,11 @@ msgstr ""
 msgid "Renews on"
 msgstr ""
 
+#. js-lingui-id: M7SqjM
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
+msgid "Reopen"
+msgstr ""
+
 #. js-lingui-id: co4jwi
 #. placeholder {0}: tab.title
 #: src/modules/page-layout/components/PageLayoutTabMenuItemSelectAvatar.tsx
@@ -21294,6 +21392,7 @@ msgid "Replit install links require an HTTPS MCP URL."
 msgstr ""
 
 #. js-lingui-id: ImOQa9
+#: src/modules/ai/components/AiChatThreadRequestActions.tsx
 #: src/modules/object-core/agents/components/CoreAgentRunDetails.tsx
 #: src/modules/page-layout/widgets/email-thread/components/EmailThreadComposer.tsx
 #: src/modules/side-panel/hooks/useOpenComposeEmailInSidePanel.ts
@@ -21493,6 +21592,11 @@ msgstr ""
 #. js-lingui-id: s+MGs7
 #: src/modules/settings/applications/components/SettingsApplicationAboutSidebar.tsx
 msgid "Resources"
+msgstr ""
+
+#. js-lingui-id: qrqIfV
+#: src/modules/ai/components/AiChatThreadRequestActions.tsx
+msgid "Respond to request"
 msgstr ""
 
 #. js-lingui-id: ZlCDf+
@@ -22889,7 +22993,7 @@ msgid "Select an option"
 msgstr ""
 
 #. js-lingui-id: 0yxhOL
-#: src/modules/ai/components/AiChatThreadListItem.tsx
+#: src/modules/ai/components/AiChatThreadRow.tsx
 msgid "Select chat"
 msgstr ""
 
@@ -23035,6 +23139,11 @@ msgstr ""
 #. js-lingui-id: 7c7atJ
 #: src/pages/settings/profile/appearance/components/SettingsExperience.tsx
 msgid "Select your language and adjust the size of the interface"
+msgstr ""
+
+#. js-lingui-id: CRzfBf
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+msgid "Selected chats"
 msgstr ""
 
 #. js-lingui-id: AM0pWl
@@ -23692,6 +23801,11 @@ msgstr ""
 msgid "Sign in or Create an account"
 msgstr ""
 
+#. js-lingui-id: mkNBD/
+#: src/modules/oidc-sso/components/SignInUpWithOidc.tsx
+msgid "Sign in with {name}"
+msgstr ""
+
 #. js-lingui-id: e+RpCP
 #: src/modules/auth/sign-in-up/components/internal/SignInUpWithCredentials.tsx
 msgid "Sign up"
@@ -23917,8 +24031,16 @@ msgid "smtp.example.com"
 msgstr ""
 
 #. js-lingui-id: 7+i6oV
+#: src/modules/ai/components/AiChatInboxBulkActions.tsx
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
 #: src/modules/side-panel/hooks/useOpenSnoozeAiChatInSidePanel.ts
 msgid "Snooze"
+msgstr ""
+
+#. js-lingui-id: aqkwib
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+msgid "Snooze chat"
 msgstr ""
 
 #. js-lingui-id: xKw3A1
@@ -23967,6 +24089,11 @@ msgstr ""
 #. placeholder {1}: stepLog.truncated.droppedBytes
 #: src/modules/workflow/workflow-steps/workflow-actions/components/WorkflowRunStepLogsDetail.tsx
 msgid "Some log data was dropped to fit the size limit ({0} entries, {1} bytes)."
+msgstr ""
+
+#. js-lingui-id: 2c+W2z
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+msgid "Someone replies"
 msgstr ""
 
 #. js-lingui-id: nwtY4N
@@ -24738,6 +24865,11 @@ msgstr ""
 msgid "Swedish"
 msgstr ""
 
+#. js-lingui-id: M7wPsD
+#: src/modules/settings/billing/hooks/useBillingPlanActions.ts
+msgid "Switch"
+msgstr ""
+
 #. js-lingui-id: 3D7mFh
 #: src/modules/settings/billing/hooks/useBillingPlanActions.ts
 msgid "Switch to {planLabel}"
@@ -24780,6 +24912,7 @@ msgid "Sync"
 msgstr ""
 
 #. js-lingui-id: NmHVSC
+#: src/pages/settings/applications/components/SettingsClaimApplicationSection.tsx
 #: src/pages/settings/applications/components/SettingsClaimApplicationSection.tsx
 msgid "Sync catalog"
 msgstr ""
@@ -27185,6 +27318,7 @@ msgid "Until {snoozedUntilDay}"
 msgstr ""
 
 #. js-lingui-id: wja8aL
+#: src/modules/ai/components/AiChatThreadListItem.tsx
 #: src/modules/ai/components/AiChatThreadTitle.tsx
 #: src/modules/log-console/components/LogConsoleDetailPanel.tsx
 #: src/modules/log-console/components/LogConsoleRecordCell.tsx
@@ -27413,6 +27547,7 @@ msgstr ""
 #: src/modules/information-banner/components/billing/InformationBannerNoMoreCredits.tsx
 #: src/modules/log-console/components/LogConsole.tsx
 #: src/modules/settings/billing/components/internal/ResourceCreditPriceSelector.tsx
+#: src/modules/settings/billing/hooks/useBillingPlanActions.ts
 #: src/modules/settings/event-logs/components/SettingsLogs.tsx
 #: src/modules/settings/roles/role-permissions/object-level-permissions/record-level-permissions/components/SettingsRolePermissionsObjectLevelRecordLevelSection.tsx
 msgid "Upgrade"
@@ -27925,6 +28060,12 @@ msgstr ""
 msgid "Users"
 msgstr ""
 
+#. js-lingui-id: BtbgpK
+#. placeholder {0}: provider.name
+#: src/modules/oidc-sso/components/SettingsOidcProviderRowMenu.tsx
+msgid "Users will no longer be able to sign in through {0}."
+msgstr ""
+
 #. js-lingui-id: zCO0/Y
 #: src/modules/settings/admin-panel/components/SettingsAdminServerAdmins.tsx
 msgid "Users with server-level access. Open a user to grant or revoke access; use the search below to find anyone."
@@ -28427,6 +28568,11 @@ msgstr ""
 msgid "Waiting for your approval"
 msgstr ""
 
+#. js-lingui-id: rZmwg4
+#: src/modules/ai/components/AiChatThreadTriageButtons.tsx
+msgid "Wake now"
+msgstr ""
+
 #. js-lingui-id: THYlSm
 #: src/pages/settings/ai/SettingsAI.tsx
 #: src/pages/settings/applications/SettingsApplications.tsx
@@ -28756,6 +28902,11 @@ msgstr ""
 #. js-lingui-id: RlSr4h
 #: src/pages/settings/communications/SettingsWorkspaceCommunications.tsx
 msgid "Whatsapp"
+msgstr ""
+
+#. js-lingui-id: 8ssTdk
+#: src/modules/ai/components/AiChatSnoozeMenu.tsx
+msgid "When {assistantName} finishes"
 msgstr ""
 
 #. js-lingui-id: m7GziZ
