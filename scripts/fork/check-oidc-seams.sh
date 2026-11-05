@@ -12,6 +12,8 @@ OWN_PREFIXES=(
   "scripts/fork/"
 )
 OWN_FILES=("docs/oidc-sso-roadmap.md")
+# Seams that rewrite upstream lines (S4 hides the Enterprise SSO gate card), so deletions are allowed
+MODIFYING_SEAMS=("packages/twenty-front/src/modules/settings/security/components/SettingsSecuritySettings.tsx")
 
 if [ "${1:-}" = "--numstat-from" ] && [ "${2:-}" = "-" ]; then
   numstat="$(cat)"
@@ -42,7 +44,7 @@ while IFS=$'\t' read -r added deleted path; do
   if is_own "$path"; then
     own=$((own + 1))
   elif grep -Fxq "$path" "$SEAMS_FILE"; then
-    if [ "$added" = "-" ] || [ "$deleted" != "0" ]; then
+    if [ "$added" = "-" ] || { [ "$deleted" != "0" ] && [[ ! " ${MODIFYING_SEAMS[*]} " == *" $path "* ]]; }; then
       violations+=("seam must be additive only ($deleted deleted): $path")
     else
       seam=$((seam + 1))
