@@ -1,13 +1,11 @@
 import { type QueryConfig, types } from 'pg';
-import {
-  type FeatureFlagKey,
-  type ObjectsPermissions,
-} from 'twenty-shared/types';
+import { type FeatureFlagKey } from 'twenty-shared/types';
 import { isDefined, pascalCase } from 'twenty-shared/utils';
 import { type ObjectLiteral } from 'typeorm';
 import { InstanceChecker } from 'typeorm/util/InstanceChecker';
 
 import { RelationType } from 'src/engine/metadata-modules/field-metadata/interfaces/relation-type.interface';
+import { type RoleRecordsPermissions } from 'src/engine/permissions/types/role-records-permissions.type';
 
 import {
   TwentyOrmException,
@@ -51,10 +49,7 @@ import {
   type SelectStatementState,
   type WhereClause,
 } from 'src/engine/twenty-orm/sql/utils/build-select-statement.util';
-import {
-  type WorkspaceRelationShape,
-  type WorkspaceTableShape,
-} from 'src/engine/twenty-orm/table-shape/types/workspace-table-shape.type';
+import { type WorkspaceTableShape } from 'src/engine/twenty-orm/table-shape/types/workspace-table-shape.type';
 import { escapeIdentifier } from 'src/engine/workspace-manager/workspace-migration/utils/remove-sql-injection.util';
 
 let objectWhereParameterSequence = 0;
@@ -70,7 +65,7 @@ const isNestedWhereObject = (value: unknown): value is ObjectWhereLike =>
 export type QueryBuilderContext = {
   tableShape: WorkspaceTableShape;
   executor: QueryExecutor;
-  objectRecordsPermissions: ObjectsPermissions;
+  recordsPermissions: RoleRecordsPermissions;
   featureFlagsMap?: Partial<Record<FeatureFlagKey, boolean>>;
   tableShapeByObjectMetadataId: (
     objectMetadataId: string,
@@ -82,7 +77,7 @@ export type QueryBuilderContext = {
 export class WorkspaceSelectQueryBuilder implements WhereExpressionLike {
   readonly alias: string;
   readonly tableShape: WorkspaceTableShape;
-  readonly objectRecordsPermissions: ObjectsPermissions;
+  readonly recordsPermissions: RoleRecordsPermissions;
   readonly featureFlagsMap: Partial<Record<FeatureFlagKey, boolean>>;
 
   private readonly context: QueryBuilderContext;
@@ -106,7 +101,7 @@ export class WorkspaceSelectQueryBuilder implements WhereExpressionLike {
   constructor(alias: string, context: QueryBuilderContext) {
     this.alias = alias;
     this.tableShape = context.tableShape;
-    this.objectRecordsPermissions = context.objectRecordsPermissions;
+    this.recordsPermissions = context.recordsPermissions;
     this.featureFlagsMap = context.featureFlagsMap ?? {};
     this.context = context;
   }
@@ -717,23 +712,6 @@ export class WorkspaceSelectQueryBuilder implements WhereExpressionLike {
         (existsFilterClause) => existsFilterClause.alias === alias,
       )?.targetTableShape
     );
-  }
-
-  getJoinParentRelationShape(
-    alias: string,
-  ): WorkspaceRelationShape | undefined {
-    const clause =
-      this.joinClauses.find((joinClause) => joinClause.alias === alias) ??
-      this.existsFilterClauses.find(
-        (existsFilterClause) => existsFilterClause.alias === alias,
-      );
-
-    if (!isDefined(clause)) {
-      return undefined;
-    }
-
-    return this.getTableShapeForAlias(clause.parentAlias)
-      ?.relationShapeByFieldName[clause.relationFieldName];
   }
 
   markRowLevelPermissionApplied(alias: string): boolean {

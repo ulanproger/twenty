@@ -3,17 +3,20 @@ import { CHECKBOX_PROP_DESCRIPTIONS } from './checkboxPropDescriptions';
 import { SWITCH_PROP_DESCRIPTIONS } from './switchPropDescriptions';
 import { TEXTAREA_PROP_DESCRIPTIONS } from './textareaPropDescriptions';
 import { INPUT_GROUP_PROP_DESCRIPTIONS } from './inputGroupPropDescriptions';
+import { FORM_FIELD_ROW_PROP_DESCRIPTIONS } from './formFieldRowPropDescriptions';
 import { INPUT_PROP_DESCRIPTIONS } from './inputPropDescriptions';
 import { COUNTRY_SELECT_PROP_DESCRIPTIONS } from './countrySelectPropDescriptions';
 import { COUNTRY_SELECT_PART_PROP_DESCRIPTIONS } from './countrySelectPartPropDescriptions';
 import { CURRENCY_PICKER_PART_PROP_DESCRIPTIONS } from './currencyPickerPartPropDescriptions';
 import { CURRENCY_PICKER_PROP_DESCRIPTIONS } from './currencyPickerPropDescriptions';
+import { COUNT_PAGER_PROP_DESCRIPTIONS } from './countPagerPropDescriptions';
 import { OVERFLOWING_LIST_PROP_DESCRIPTIONS } from './overflowingListPropDescriptions';
 import { METRIC_ROW_PROP_DESCRIPTIONS } from './metricRowPropDescriptions';
 import { DETAILS_ROW_PROP_DESCRIPTIONS } from './detailsRowPropDescriptions';
 import { PROGRESS_PART_PROP_DESCRIPTIONS } from './progressPartPropDescriptions';
 import { PROGRESS_RING_PROP_DESCRIPTIONS } from './progressRingPropDescriptions';
 import { AVATAR_GROUP_PROP_DESCRIPTIONS } from './avatarGroupPropDescriptions';
+import { ASSISTANT_AVATAR_PROP_DESCRIPTIONS } from './assistantAvatarPropDescriptions';
 import { COMMAND_BLOCK_PROP_DESCRIPTIONS } from './commandBlockPropDescriptions';
 import { JSON_TREE_PROP_DESCRIPTIONS } from './jsonTreePropDescriptions';
 import { STACK_ICON_PROP_DESCRIPTIONS } from './stackIconPropDescriptions';
@@ -28,6 +31,7 @@ import { RADIO_GROUP_PROP_DESCRIPTIONS } from './radioGroupPropDescriptions';
 import { PHONE_COUNTRY_PICKER_PART_PROP_DESCRIPTIONS } from './phoneCountryPickerPartPropDescriptions';
 import { PHONE_COUNTRY_PICKER_PROP_DESCRIPTIONS } from './phoneCountryPickerPropDescriptions';
 import { SEARCH_INPUT_PROP_DESCRIPTIONS } from './searchInputPropDescriptions';
+import { DATE_PICKER_PROP_DESCRIPTIONS } from './datePickerPropDescriptions';
 import { NUMBER_STEPPER_PROP_DESCRIPTIONS } from './numberStepperPropDescriptions';
 import { NUMBER_FIELD_PART_PROP_DESCRIPTIONS } from './numberFieldPartPropDescriptions';
 import { IMAGE_INPUT_PROP_DESCRIPTIONS } from './imageInputPropDescriptions';
@@ -67,6 +71,7 @@ import { SEPARATOR_PROP_DESCRIPTIONS } from './separatorPropDescriptions';
 import { ICON_BUTTON_PROP_DESCRIPTIONS } from './iconButtonPropDescriptions';
 import { LIGHT_BUTTON_PROP_DESCRIPTIONS } from './lightButtonPropDescriptions';
 import { REACTION_BUTTON_PROP_DESCRIPTIONS } from './reactionButtonPropDescriptions';
+import { EMOJI_PICKER_PROP_DESCRIPTIONS } from './emojiPickerPropDescriptions';
 import { LIGHT_ICON_BUTTON_PROP_DESCRIPTIONS } from './lightIconButtonPropDescriptions';
 import { LOADER_PROP_DESCRIPTIONS } from './loaderPropDescriptions';
 import { SKELETON_PROP_DESCRIPTIONS } from './skeletonPropDescriptions';
@@ -343,6 +348,18 @@ export const DOCUMENTED_COMPONENTS = [
     propDefaults: { variant: 'ghost', size: 'sm' },
   },
   {
+    name: 'EmojiPicker',
+    source: 'components/input/EmojiPicker/EmojiPicker.tsx',
+    entryPoint: 'twenty-ui/components/input',
+    slug: 'components/input/emoji-picker',
+    propDescriptions: EMOJI_PICKER_PROP_DESCRIPTIONS,
+    propDefaults: {
+      locale: 'en',
+      searchPlaceholder: 'searchLabel',
+      autoFocus: 'false',
+    },
+  },
+  {
     name: 'ReactionButton',
     source: 'components/input/ReactionButton/ReactionButton.tsx',
     entryPoint: 'twenty-ui/components/input',
@@ -599,6 +616,8 @@ export const DOCUMENTED_COMPONENTS = [
         'Text between sequential shortcut steps. Defaults to `then`; pass an empty string to omit it.',
       actionsVisibility:
         'When trailing actions are visible: on hover and focus, or always.',
+      actionsPlacement:
+        'Keeps actions beside the content at every width when set to `end`. The default `auto` preserves responsive wrapping. Hidden end actions do not reserve width on devices without touch.',
     },
   },
   {
@@ -869,6 +888,25 @@ export const DOCUMENTED_COMPONENTS = [
     propDescriptions: OVERFLOWING_LIST_PROP_DESCRIPTIONS,
   },
   {
+    name: 'LabeledSeparator',
+    source: 'components/layout/LabeledSeparator/LabeledSeparator.tsx',
+    entryPoint: 'twenty-ui/components/layout',
+    slug: 'components/layout/labeled-separator',
+    propDescriptions: {
+      children:
+        'Text naming the separator. Supplied and localized by the caller.',
+      labelPosition:
+        'Place the label between two lines or at the end of one line.',
+      tone: 'Neutral divider or red marker with a thicker rule.',
+      hasStartMarker: 'Show a decorative cap at the beginning of the rule.',
+    },
+    propDefaults: {
+      labelPosition: 'center',
+      tone: 'neutral',
+      hasStartMarker: 'false',
+    },
+  },
+  {
     name: 'Section',
     source: 'components/layout/Section/Section.tsx',
     entryPoint: 'twenty-ui/components/layout',
@@ -921,6 +959,18 @@ export const DOCUMENTED_COMPONENTS = [
     propDefaults: { type: 'button', disabled: 'false' },
   },
   {
+    name: 'CountPager',
+    source: 'components/navigation/CountPager/CountPager.tsx',
+    entryPoint: 'twenty-ui/components/navigation',
+    slug: 'components/navigation/count-pager',
+    propDescriptions: COUNT_PAGER_PROP_DESCRIPTIONS,
+    propDefaults: {
+      disabled: 'false',
+      positionPlacement: 'between',
+      role: 'group',
+    },
+  },
+  {
     name: 'TabButton',
     source: 'components/navigation/TabButton/TabButton.tsx',
     entryPoint: 'twenty-ui/components/navigation',
@@ -933,6 +983,21 @@ export const DOCUMENTED_COMPONENTS = [
       size: 'Padding of the tab content: sm or md. Explicit size takes precedence over the ButtonGroup size, then sm applies.',
     },
     propDefaults: { size: 'sm' },
+  },
+  {
+    name: 'AssistantAvatar',
+    nativeProps: 'span',
+    source: 'components/data-display/AssistantAvatar/AssistantAvatar.tsx',
+    entryPoint: 'twenty-ui/components/data-display',
+    slug: 'components/data-display/assistant-avatar',
+    propDescriptions: ASSISTANT_AVATAR_PROP_DESCRIPTIONS,
+    propDefaults: {
+      shape: 'circle',
+      color: 'blue',
+      face: 'default',
+      size: '24',
+      isAnimated: 'false',
+    },
   },
   {
     name: 'AvatarGroup',
@@ -1020,11 +1085,39 @@ export const DOCUMENTED_COMPONENTS = [
     propDescriptions: TOASTER_PROP_DESCRIPTIONS,
   },
   {
+    name: 'FormFieldRow',
+    source: 'components/input/FormFieldRow/FormFieldRow.tsx',
+    entryPoint: 'twenty-ui/components/input',
+    slug: 'components/input/form-field-row',
+    propDescriptions: FORM_FIELD_ROW_PROP_DESCRIPTIONS,
+    propDefaults: {
+      labelWidth: '80',
+      contentPaddingInline: 'var(--t-spacing-2)',
+      isHoverable: 'false',
+      hasDivider: 'true',
+    },
+  },
+  {
     name: 'ImageInput',
     source: 'components/input/ImageInput/ImageInput.tsx',
     entryPoint: 'twenty-ui/components/input',
     slug: 'components/input/image-input',
     propDescriptions: IMAGE_INPUT_PROP_DESCRIPTIONS,
+  },
+  {
+    name: 'DatePicker',
+    source: 'components/input/DatePicker/DatePicker.tsx',
+    entryPoint: 'twenty-ui/components/input',
+    slug: 'components/input/date-picker',
+    propDescriptions: DATE_PICKER_PROP_DESCRIPTIONS,
+    propDefaults: {
+      isKeyboardNavigationDisabled: 'false',
+      loadingFallback: '300px-high Skeleton',
+      disabled: 'false',
+      readOnly: 'false',
+      isGridHidden: 'false',
+      role: 'group',
+    },
   },
   {
     name: 'SearchInput',
@@ -1049,15 +1142,15 @@ export const DOCUMENTED_COMPONENTS = [
   },
   {
     name: 'Icon',
-    source: 'icon/components/Icon.tsx',
-    entryPoint: 'twenty-ui/icon',
+    source: 'icon/provider/components/Icon.tsx',
+    entryPoint: 'twenty-ui/icon/provider',
     slug: 'icon/icon',
     propDescriptions: ICON_PROP_DESCRIPTIONS,
   },
   {
     name: 'IconsProvider',
-    source: 'icon/providers/IconsProvider.tsx',
-    entryPoint: 'twenty-ui/icon',
+    source: 'icon/provider/IconsProvider.tsx',
+    entryPoint: 'twenty-ui/icon/provider',
     slug: 'icon/icons-provider',
     propDescriptions: ICONS_PROVIDER_PROP_DESCRIPTIONS,
   },

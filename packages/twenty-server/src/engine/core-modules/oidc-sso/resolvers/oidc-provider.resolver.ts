@@ -16,9 +16,8 @@ import { OidcSsoGraphqlApiExceptionFilter } from 'src/engine/core-modules/oidc-s
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { AuthWorkspace } from 'src/engine/decorators/auth/auth-workspace.decorator';
-import { AuthPrincipalGuard } from 'src/engine/guards/auth-principal.guard';
-import { SettingsPermissionGuard } from 'src/engine/guards/settings-permission.guard';
-import { PermissionsGraphqlApiExceptionFilter } from 'src/engine/metadata-modules/permissions/utils/permissions-graphql-api-exception.filter';
+import { AccessPolicyGuard } from 'src/engine/guards/access-policy.guard';
+import { PermissionsGraphqlApiExceptionFilter } from 'src/engine/permissions/utils/permissions-graphql-api-exception.filter';
 
 @MetadataResolver()
 @UseFilters(
@@ -29,18 +28,20 @@ import { PermissionsGraphqlApiExceptionFilter } from 'src/engine/metadata-module
 )
 @UsePipes(ResolverValidationPipe)
 @UseGuards(
-  AuthPrincipalGuard({
-    userSession: {
-      standard: true,
-      impersonated: false,
-      playground: false,
-      workspaceAgnostic: false,
+  AccessPolicyGuard({
+    authPrincipals: {
+      userSession: {
+        standard: true,
+        impersonated: false,
+        playground: false,
+        workspaceAgnostic: false,
+      },
+      apiKey: false,
+      oauthClient: false,
+      application: false,
     },
-    apiKey: false,
-    oauthClient: false,
-    application: false,
+    requiredPermissionFlags: [PermissionFlagType.SECURITY],
   }),
-  SettingsPermissionGuard(PermissionFlagType.SECURITY),
 )
 export class OidcProviderResolver {
   constructor(private readonly oidcProviderService: OidcProviderService) {}

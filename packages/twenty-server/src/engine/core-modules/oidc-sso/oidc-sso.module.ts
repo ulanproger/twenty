@@ -14,7 +14,6 @@ import { OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/o
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { SecretEncryptionModule } from 'src/engine/core-modules/secret-encryption/secret-encryption.module';
 import { SecureHttpClientModule } from 'src/engine/core-modules/secure-http-client/secure-http-client.module';
-import { PermissionsModule } from 'src/engine/metadata-modules/permissions/permissions.module';
 import { UserModule } from 'src/engine/core-modules/user/user.module';
 
 @Module({
@@ -26,7 +25,6 @@ import { UserModule } from 'src/engine/core-modules/user/user.module';
     WorkspaceDomainsModule,
     SecretEncryptionModule,
     SecureHttpClientModule,
-    PermissionsModule,
   ],
   controllers: [OidcSsoAuthController],
   providers: [
