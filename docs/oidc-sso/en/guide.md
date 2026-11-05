@@ -2,7 +2,7 @@
 
 Sign in to a Twenty workspace through a corporate OpenID Connect provider (Keycloak, Okta, Auth0, Google and others). Only the Authorization Code flow with PKCE S256 is supported. Providers are configured per workspace and a workspace can have several.
 
-This is the fork's own implementation. The old Enterprise "SSO" block on the security page is still in the UI but has nothing to do with OIDC providers.
+This is the fork's own implementation. The old Enterprise "SSO" block on the security page is hidden unless the instance has a valid Enterprise plan, and has nothing to do with OIDC providers.
 
 Next: [identity provider recipes](providers.md), [reference and troubleshooting](reference.md).
 

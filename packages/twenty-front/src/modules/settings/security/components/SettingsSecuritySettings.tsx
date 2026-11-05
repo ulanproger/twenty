@@ -163,24 +163,18 @@ export const SettingsSecuritySettings = () => {
     <>
       <SettingsRolesQueryEffect />
       <StyledMainContent>
-        <StyledSectionContainer>
-          <Section.Root>
-            <Section.Header
-              title={t`SSO`}
-              description={t`Configure an SSO connection`}
-              actions={<OrganizationAdornment />}
-            />
-            {hasSsoEntitlement ? (
-              <SettingsSsoIdentitiesProvidersListCard />
-            ) : (
-              <SettingsEnterpriseFeatureGateCard
-                title={t`Organization feature`}
-                description={t`Upgrade to Organization to configure SSO.`}
-                buttonTitle={t`Activate`}
+        {hasSsoEntitlement && (
+          <StyledSectionContainer>
+            <Section.Root>
+              <Section.Header
+                title={t`SSO`}
+                description={t`Configure an SSO connection`}
+                actions={<OrganizationAdornment />}
               />
-            )}
-          </Section.Root>
-        </StyledSectionContainer>
+              <SettingsSsoIdentitiesProvidersListCard />
+            </Section.Root>
+          </StyledSectionContainer>
+        )}
 
         <SettingsOidcProvidersSection />
 
