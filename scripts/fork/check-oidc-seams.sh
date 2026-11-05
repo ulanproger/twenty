@@ -10,8 +10,11 @@ OWN_PREFIXES=(
   "packages/twenty-server/src/engine/core-modules/oidc-sso/"
   "packages/twenty-front/src/modules/oidc-sso/"
   "scripts/fork/"
+  "docs/oidc-sso/"
 )
-OWN_FILES=("docs/oidc-sso-roadmap.md")
+OWN_FILES=("docs/oidc-sso-roadmap.md" ".github/workflows/fork-build-ghcr-image.yaml")
+# Seams that rewrite upstream lines, as "path:max deleted lines" (S4 hides the Enterprise SSO gate card, 17 today)
+MODIFYING_SEAMS=("packages/twenty-front/src/modules/settings/security/components/SettingsSecuritySettings.tsx:20")
 
 if [ "${1:-}" = "--numstat-from" ] && [ "${2:-}" = "-" ]; then
   numstat="$(cat)"
@@ -36,14 +39,22 @@ is_own() {
   return 1
 }
 
+max_deleted() {
+  local path="$1" entry
+  for entry in "${MODIFYING_SEAMS[@]}"; do
+    [[ "${entry%:*}" == "$path" ]] && { echo "${entry##*:}"; return; }
+  done
+  echo 0
+}
+
 while IFS=$'\t' read -r added deleted path; do
   [ -z "${path:-}" ] && continue
 
   if is_own "$path"; then
     own=$((own + 1))
   elif grep -Fxq "$path" "$SEAMS_FILE"; then
-    if [ "$added" = "-" ] || [ "$deleted" != "0" ]; then
-      violations+=("seam must be additive only ($deleted deleted): $path")
+    if [ "$added" = "-" ] || [ "$deleted" -gt "$(max_deleted "$path")" ]; then
+      violations+=("seam deletes too many lines ($deleted, allowed $(max_deleted "$path")): $path")
     else
       seam=$((seam + 1))
     fi
