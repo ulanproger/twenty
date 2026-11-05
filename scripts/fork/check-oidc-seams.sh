@@ -12,7 +12,7 @@ OWN_PREFIXES=(
   "scripts/fork/"
   "docs/oidc-sso/"
 )
-OWN_FILES=("docs/oidc-sso-roadmap.md")
+OWN_FILES=("docs/oidc-sso-roadmap.md" ".github/workflows/fork-build-ghcr-image.yaml")
 # Seams that rewrite upstream lines (S4 hides the Enterprise SSO gate card), so deletions are allowed
 MODIFYING_SEAMS=("packages/twenty-front/src/modules/settings/security/components/SettingsSecuritySettings.tsx")
 

@@ -57,3 +57,11 @@ git fetch upstream main
 git config rerere.enabled true
 bash scripts/fork/check-oidc-seams.sh    # run before every commit and after every sync
 ```
+
+## Build and publish the image
+
+```bash
+gh workflow run fork-build-ghcr-image.yaml --ref main
+```
+
+Builds `ghcr.io/<owner>/twenty` for linux/amd64 and linux/arm64 from the chosen ref and tags it `sha-<first 10 chars of the commit>`. `APP_VERSION` comes from `TWENTY_CURRENT_VERSION`. The run summary prints the `docker pull` line.
