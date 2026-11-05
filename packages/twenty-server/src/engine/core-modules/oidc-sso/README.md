@@ -42,9 +42,9 @@ S6 (`SignInUpWorkspaceScopeFormEffect.tsx`, `useHasMultipleAuthMethods.ts`) is n
 2. Resolve seam conflicts with the table above.
 3. `bash scripts/fork/check-oidc-seams.sh` must print `OK: 6 seam file(s)`. Run it after the merge commit exists, it compares with the merge base.
 4. `yarn install`, then `npx tsgo -p tsconfig.json --noEmit` in `twenty-server` and `twenty-front`, unit tests of this module, the smoke scripts.
-5. Regenerate the S7 snapshot with the integration test: from `packages/twenty-server`, `NODE_ENV=test npx jest --config ./jest-integration.config.ts test/integration/endpoint-permissions`.
+5. Regenerate the S7 snapshot with the integration test, never by hand: from `packages/twenty-server`, `NODE_OPTIONS=--max-old-space-size=10240 NODE_ENV=test npx jest --config ./jest-integration.config.ts test/integration/endpoint-permissions -u`. It needs the test database prepared by `NODE_ENV=test nx database:reset`. If the run fails on roles, flush the cache with `node dist/command/command.js cache:flush`.
 
-Known blocker for the next sync: upstream #29661 removed `AuthPrincipalGuard` and `SettingsPermissionGuard` and changed the snapshot format, so `oidc-provider.resolver.ts` needs a port to `AccessPolicyGuard`. Details and steps: section 9 of `docs/oidc-sso-roadmap.md`.
+Last sync (2026-11-05, details in section 9 of `docs/oidc-sso-roadmap.md`): upstream #29661 replaced the old guards with `AccessPolicyGuard`, so `oidc-provider.resolver.ts` was ported. Use the Node version upstream requires (`^26.5.1` at the time). `check-oidc-seams.sh` also lists `max-workspaces-without-organization-key.constant.ts` (workspace limit, #13) until it is added as a seam or allowed another way.
 
 ## Database
 
