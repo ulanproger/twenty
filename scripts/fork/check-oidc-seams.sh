@@ -11,7 +11,7 @@ OWN_PREFIXES=(
   "packages/twenty-front/src/modules/oidc-sso/"
   "scripts/fork/"
 )
-OWN_FILES=("docs/oidc-sso-roadmap.md")
+OWN_FILES=("docs/oidc-sso-roadmap.md" ".github/workflows/fork-build-ghcr-image.yaml")
 
 if [ "${1:-}" = "--numstat-from" ] && [ "${2:-}" = "-" ]; then
   numstat="$(cat)"
