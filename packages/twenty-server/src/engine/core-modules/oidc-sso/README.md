@@ -51,3 +51,7 @@ Last sync (2026-11-05, details in section 9 of `docs/oidc-sso-roadmap.md`): upst
 ## Database
 
 One table, created by a hand-written instance command in `migrations/` with a fixed version `'2.51.0'` (do not import `TWENTY_CURRENT_VERSION`). SQL is idempotent. See section 3.5 of the roadmap.
+
+## Building the image without GitHub Actions
+
+`scripts/fork/build-image.sh` builds the same image as the "Fork build GHCR image" workflow on any machine with Docker and buildx. Run it from a clean checkout of the commit to build: `bash scripts/fork/build-image.sh --dry-run` runs the checks (Docker memory and disk, emulation, the `run-instance-commands` step in `entrypoint.sh`) and prints the build command. Without `--push` it only writes an OCI archive; `--push` publishes `ghcr.io/ulanproger/twenty:sha-<10 chars>` for all platforms (set `GHCR_TOKEN` with `write:packages`, or log in to ghcr.io first). A foreign platform is built under emulation and takes hours, so on an amd64 server it is faster to build `--platforms linux/amd64` there, the arm64 image on an arm64 machine, and join the two tags with `docker buildx imagetools create`.
