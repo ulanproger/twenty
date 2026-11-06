@@ -33,14 +33,15 @@ All are additive (0 deleted lines) except S4, which rewrites the legacy SSO sect
 | S4 | `twenty-front/.../SettingsSecuritySettings.tsx` | +1 import, `<SettingsOidcProvidersSection />` outside the SSO entitlement check; the legacy SSO section is wrapped in `{hasSsoEntitlement && (...)}` and its upgrade card is removed | keep upstream, re-wrap the legacy section in `{hasSsoEntitlement && (...)}` without the upgrade card, re-add the import and the section after it |
 | S5 | `twenty-front/.../SignInUpWorkspaceScopeForm.tsx` | +1 import, `{!shouldUseBypass && <SignInUpWithOidc />}` | keep upstream, re-add both |
 | S7 | `test/integration/endpoint-permissions/__snapshots__/endpoint-permission-declarations.integration-spec.ts.snap` | entries for our controller and resolvers | regenerate, do not hand-edit (see below) |
+| S8 | `twenty-docker/twenty/entrypoint.sh` | +5 lines: `yarn command:prod run-instance-commands` after `upgrade`, a failure only warns | keep upstream, re-add the block after the `upgrade` call |
 
-S6 (`SignInUpWorkspaceScopeFormEffect.tsx`, `useHasMultipleAuthMethods.ts`) is not needed: the effect has fixed dependencies and would run before our query loads. The two paths stay in `oidc-seams.txt`, so the six seams above are the active ones.
+S6 (`SignInUpWorkspaceScopeFormEffect.tsx`, `useHasMultipleAuthMethods.ts`) is not needed: the effect has fixed dependencies and would run before our query loads. The two paths stay in `oidc-seams.txt`, so the seven seams above are the active ones.
 
 ## Syncing with upstream
 
 1. `git fetch upstream && git merge upstream/main` (merge, not rebase). `git config rerere.enabled true`.
 2. Resolve seam conflicts with the table above.
-3. `bash scripts/fork/check-oidc-seams.sh` must report no violation except the known `max-workspaces-without-organization-key.constant.ts` (workspace limit from #13, not a seam yet), and the seam files it counts must be the six above. Run it after the merge commit exists, it compares with the merge base.
+3. `bash scripts/fork/check-oidc-seams.sh` must report no violation except the known `max-workspaces-without-organization-key.constant.ts` (workspace limit from #13, not a seam yet), and the seam files it counts must be the seven above. Run it after the merge commit exists, it compares with the merge base.
 4. `yarn install`, then `npx tsgo -p tsconfig.json --noEmit` in `twenty-server` and `twenty-front`, unit tests of this module, the smoke scripts.
 5. Regenerate the S7 snapshot with the integration test, never by hand: from `packages/twenty-server`, `NODE_OPTIONS=--max-old-space-size=10240 NODE_ENV=test npx jest --config ./jest-integration.config.ts test/integration/endpoint-permissions -u`. It needs the test database prepared by `NODE_ENV=test nx database:reset`. If the run fails on roles, flush the cache with `node dist/command/command.js cache:flush`.
    `-u` accepts any drift, so afterwards confirm our entries survived: `grep -c -E '"(OidcProviderResolver|OidcSsoAuthController|PublicOidcProviderResolver)\.'` on the snapshot must print 7 (4 resolver operations, 2 controller routes, 1 public query), and read the snapshot `git diff`.

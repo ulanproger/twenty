@@ -6,3 +6,4 @@ packages/twenty-front/src/modules/auth/sign-in-up/components/SignInUpWorkspaceSc
 packages/twenty-front/src/modules/auth/sign-in-up/components/internal/SignInUpWorkspaceScopeFormEffect.tsx
 packages/twenty-front/src/modules/auth/sign-in-up/hooks/useHasMultipleAuthMethods.ts
 packages/twenty-server/test/integration/endpoint-permissions/__snapshots__/endpoint-permission-declarations.integration-spec.ts.snap
+packages/twenty-docker/twenty/entrypoint.sh
