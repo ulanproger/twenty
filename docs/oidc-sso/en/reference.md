@@ -124,6 +124,10 @@ Reasons in the log (after `OIDC sign-in failed:`):
 | `OIDC provider access denied: workspace-mismatch` | Provider from another workspace | Sign in from the right workspace address |
 | `OIDC login missing` / `OIDC login expired` | No sign-in data or more than 10 minutes passed, replayed callback, different browser | Start again from the button |
 | `OIDC provider not found` | The provider was deleted | Check the link, reload the sign-in page |
+
+## The provider table is missing
+
+Symptom: the OIDC section on the security page shows an error and the server log has `relation "core.workspaceOidcProvider" does not exist`. The table is created by an instance command, and the regular upgrade skips it on a database that already finished that Twenty version. The image start script runs `run-instance-commands` after `upgrade`, so restarting the server container fixes it. To do it by hand, run `node dist/command/command.js run-instance-commands` in the server container.
 | `OIDC discovery rejected: ...` | `issuer-mismatch`, `endpoint-missing` or `pkce-s256-unsupported` | Fix the Issuer or IdP settings |
 | `Workspace invite hash is too long` | `workspaceInviteHash` longer than 255 characters | Use a valid link |
 

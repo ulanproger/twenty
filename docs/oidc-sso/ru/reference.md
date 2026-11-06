@@ -124,6 +124,10 @@ query { publicOidcProviders(origin: "https://crm.example.com") { name loginUrl }
 | `OIDC provider access denied: workspace-mismatch` | Провайдер из другого воркспейса | Входить с адреса нужного воркспейса |
 | `OIDC login missing` / `OIDC login expired` | Нет данных входа или прошло больше 10 минут, повтор callback, другой браузер | Начать вход заново с кнопки |
 | `OIDC provider not found` | Провайдер удалён | Проверить ссылку, перезагрузить страницу входа |
+
+## Таблицы провайдеров нет
+
+Симптом: раздел OIDC на странице безопасности показывает ошибку, в логе сервера `relation "core.workspaceOidcProvider" does not exist`. Таблицу создаёт инстанс-команда, а обычный апгрейд пропускает её на базе, которая уже прошла эту версию Twenty. Стартовый скрипт образа вызывает `run-instance-commands` после `upgrade`, поэтому перезапуск контейнера сервера чинит это. Вручную: `node dist/command/command.js run-instance-commands` в контейнере сервера.
 | `OIDC discovery rejected: ...` | `issuer-mismatch`, `endpoint-missing` или `pkce-s256-unsupported` | Исправить Issuer или настройки IdP |
 | `Workspace invite hash is too long` | Слишком длинный `workspaceInviteHash` (более 255 символов) | Использовать корректную ссылку |
 

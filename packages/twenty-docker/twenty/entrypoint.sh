@@ -24,6 +24,11 @@ setup_and_migrate_db() {
         echo "Warning: Upgrade completed with errors. Some workspaces may not be fully migrated. Check logs for details."
     fi
 
+    # Fork: upgrade skips instance commands added to a version the database already finished
+    if ! yarn command:prod run-instance-commands; then
+        echo "Warning: Instance commands completed with errors. Check logs for details."
+    fi
+
     if ! yarn command:prod cache:flush; then
         echo "Warning: Failed to flush cache after upgrade, but continuing startup..."
     fi
