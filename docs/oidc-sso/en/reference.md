@@ -127,7 +127,7 @@ Reasons in the log (after `OIDC sign-in failed:`):
 
 ## The provider table is missing
 
-Symptom: the OIDC section on the security page shows an error and the server log has `relation "core.workspaceOidcProvider" does not exist`. The table is created by an instance command, and the regular upgrade skips it on a database that already finished that Twenty version. The image start script runs `run-instance-commands` after `upgrade`, so restarting the server container fixes it. To do it by hand, run `node dist/command/command.js run-instance-commands` in the server container.
+Symptom: the OIDC section on the security page shows an error and the server log has `relation "core.workspaceOidcProvider" does not exist`. The table is created by an instance command, and the regular upgrade skips it on a database that already finished that Twenty version. The image start script runs `run-instance-commands` after `upgrade`, so restarting the server container fixes it, unless `DISABLE_DB_MIGRATIONS` is `true` on the server (the worker has it set by default, the server does not). To do it by hand, run `node dist/command/command.js run-instance-commands` in the server container. The command refuses to run while some workspace has not finished the previous Twenty version: finish the upgrade first instead of forcing it with `--force`.
 | `OIDC discovery rejected: ...` | `issuer-mismatch`, `endpoint-missing` or `pkce-s256-unsupported` | Fix the Issuer or IdP settings |
 | `Workspace invite hash is too long` | `workspaceInviteHash` longer than 255 characters | Use a valid link |
 

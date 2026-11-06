@@ -63,6 +63,11 @@ while IFS=$'\t' read -r added deleted path; do
   fi
 done <<< "$numstat"
 
+ENTRYPOINT="packages/twenty-docker/twenty/entrypoint.sh"
+if [ -f "$ENTRYPOINT" ] && ! grep -Fq "command:prod run-instance-commands" "$ENTRYPOINT"; then
+  violations+=("S8 block is missing, the OIDC table would not be created on finished databases: $ENTRYPOINT")
+fi
+
 if [ "${#violations[@]}" -gt 0 ]; then
   printf 'FAIL:\n' >&2
   printf '  %s\n' "${violations[@]}" >&2
