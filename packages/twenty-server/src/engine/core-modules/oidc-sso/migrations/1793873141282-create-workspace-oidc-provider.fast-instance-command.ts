@@ -3,12 +3,9 @@ import { type QueryRunner } from 'typeorm';
 import { RegisteredInstanceCommand } from 'src/engine/core-modules/upgrade/decorators/registered-instance-command.decorator';
 import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interfaces/fast-instance-command.interface';
 
-// Version is pinned on purpose: the command name includes it, so following
-// TWENTY_CURRENT_VERSION would re-run the command after every upstream bump.
-// Pin it to the oldest version this fork is ever deployed over: an instance whose
-// upgrade cursor is already past the pinned version never runs the command (2.54
-// databases skipped it at 2.51.0, so the table was missing). The SQL is idempotent.
-@RegisteredInstanceCommand('2.56.0', 1793931091088)
+// Pinned on purpose: the name includes the version, so TWENTY_CURRENT_VERSION would re-run it
+// after every bump. A DB whose cursor is past the pinned version never runs it: see roadmap 3.5.
+@RegisteredInstanceCommand('2.56.0', 1793873141282)
 export class CreateWorkspaceOidcProviderFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(

@@ -6,7 +6,7 @@ import { WorkspaceDomainsModule } from 'src/engine/core-modules/domain/workspace
 import { GuardRedirectModule } from 'src/engine/core-modules/guard-redirect/guard-redirect.module';
 import { OidcSsoAuthController } from 'src/engine/core-modules/oidc-sso/controllers/oidc-sso-auth.controller';
 import { WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
-import { CreateWorkspaceOidcProviderFastInstanceCommand } from 'src/engine/core-modules/oidc-sso/migrations/1793931091088-create-workspace-oidc-provider.fast-instance-command';
+import { CreateWorkspaceOidcProviderFastInstanceCommand } from 'src/engine/core-modules/oidc-sso/migrations/1793873141282-create-workspace-oidc-provider.fast-instance-command';
 import { OidcProviderResolver } from 'src/engine/core-modules/oidc-sso/resolvers/oidc-provider.resolver';
 import { PublicOidcProviderResolver } from 'src/engine/core-modules/oidc-sso/resolvers/public-oidc-provider.resolver';
 import { OidcAccountService } from 'src/engine/core-modules/oidc-sso/services/oidc-account.service';

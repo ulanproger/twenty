@@ -49,4 +49,4 @@ Last sync (2026-11-05, details in section 9 of `docs/oidc-sso-roadmap.md`): upst
 
 ## Database
 
-One table, created by a hand-written instance command in `migrations/` with a fixed version `'2.51.0'` (do not import `TWENTY_CURRENT_VERSION`). SQL is idempotent. See section 3.5 of the roadmap.
+One table, created by a hand-written instance command in `migrations/` with a fixed version (do not import `TWENTY_CURRENT_VERSION`). SQL is idempotent. The current pin, the timestamp rule and the re-pin rule are in section 3.5 of the roadmap.
