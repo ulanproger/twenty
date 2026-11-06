@@ -5,7 +5,10 @@ import { type FastInstanceCommand } from 'src/engine/core-modules/upgrade/interf
 
 // Version is pinned on purpose: the command name includes it, so following
 // TWENTY_CURRENT_VERSION would re-run the command after every upstream bump.
-@RegisteredInstanceCommand('2.51.0', 1793640971352)
+// Pin it to the oldest version this fork is ever deployed over: an instance whose
+// upgrade cursor is already past the pinned version never runs the command (2.54
+// databases skipped it at 2.51.0, so the table was missing). The SQL is idempotent.
+@RegisteredInstanceCommand('2.56.0', 1793931091088)
 export class CreateWorkspaceOidcProviderFastInstanceCommand implements FastInstanceCommand {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
