@@ -1,14 +1,18 @@
 #!/bin/bash
-# Builds the fork image for several platforms on one machine, the same way the
-# "Fork build GHCR image" workflow does, for when GitHub Actions is not available.
-# Run it from the root of a clean checkout of the commit you want to build.
+# Builds the fork image the way the "Fork build GHCR image" workflow does, for when GitHub
+# Actions is not available. Run it from the root of a clean checkout of the commit to build.
+# By default it builds only the native platform of this machine. Building a foreign platform
+# under emulation fails for this image (lingui extract hits the 10 s worker init timeout of the
+# threads library), so build each platform on a machine of its own architecture and join the tags:
+#   docker buildx imagetools create -t IMAGE:sha-X IMAGE:sha-X-amd64 IMAGE:sha-X-arm64
 #
 # Usage: build-image.sh [options]
-#   --push                 publish the multi-platform image (default: write an OCI archive only)
-#   --platforms LIST       default linux/amd64,linux/arm64
+#   --push                 publish the image (default: write an OCI archive only)
+#   --platforms LIST       default: the native platform of this machine
 #   --image NAME           default ghcr.io/ulanproger/twenty
-#   --tag TAG              default sha-<first 10 chars of HEAD>
-#   --install-emulation    install QEMU handlers for foreign platforms (runs a privileged container)
+#   --tag TAG              default sha-<first 10 chars of HEAD>-<arch> for one platform, sha-<...> for several
+#   --allow-emulation      build a foreign platform anyway (see above, expect it to fail)
+#   --install-emulation    with --allow-emulation: install QEMU handlers (runs a privileged container)
 #   --cleanup              prune the builder cache when done
 #   --allow-dirty          build even if the working tree has uncommitted changes
 #   --dry-run              run the checks and print the build command, build nothing
@@ -18,13 +22,14 @@ set -euo pipefail
 
 IMAGE="ghcr.io/ulanproger/twenty"
 TAG=""
-PLATFORMS="linux/amd64,linux/arm64"
+PLATFORMS=""
 BUILDER="twenty-multiarch"
 DOCKERFILE="packages/twenty-docker/twenty/Dockerfile"
 VERSION_FILE="packages/twenty-server/src/engine/core-modules/upgrade/constants/twenty-current-version.constant.ts"
 MIN_MEMORY_GB="${MIN_MEMORY_GB:-8}"
 MIN_DISK_GB="${MIN_DISK_GB:-40}"
 push=0
+allow_emulation=0
 install_emulation=0
 cleanup=0
 allow_dirty=0
@@ -36,11 +41,12 @@ while [ $# -gt 0 ]; do
     --platforms) PLATFORMS="${2:?--platforms needs a value}"; shift ;;
     --image) IMAGE="${2:?--image needs a value}"; shift ;;
     --tag) TAG="${2:?--tag needs a value}"; shift ;;
+    --allow-emulation) allow_emulation=1 ;;
     --install-emulation) install_emulation=1 ;;
     --cleanup) cleanup=1 ;;
     --allow-dirty) allow_dirty=1 ;;
     --dry-run) dry_run=1 ;;
-    -h | --help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h | --help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Unknown option: $1 (see --help)" >&2; exit 2 ;;
   esac
   shift
@@ -59,8 +65,25 @@ if [ "$allow_dirty" = "0" ] && [ -n "$(git status --porcelain -uno)" ]; then
   fail "the working tree has uncommitted changes; commit or stash them, or pass --allow-dirty"
 fi
 
+native_arch="$(docker info --format '{{.Architecture}}')"
+case "$native_arch" in
+  x86_64) native_platform="linux/amd64" ;;
+  aarch64 | arm64) native_platform="linux/arm64" ;;
+  *) native_platform="unknown" ;;
+esac
+
+if [ -z "$PLATFORMS" ]; then
+  [ "$native_platform" != "unknown" ] || fail "unknown machine architecture '$native_arch'; pass --platforms"
+  PLATFORMS="$native_platform"
+fi
+
 SHA10="$(git rev-parse --short=10 HEAD)"
-TAG="${TAG:-sha-$SHA10}"
+if [ -z "$TAG" ]; then
+  case "$PLATFORMS" in
+    *,*) TAG="sha-$SHA10" ;;
+    *) TAG="sha-$SHA10-${PLATFORMS##*/}" ;;
+  esac
+fi
 VERSION="$(sed -n "s/.*TWENTY_CURRENT_VERSION = '\([^']*\)'.*/\1/p" "$VERSION_FILE")"
 [ -n "$VERSION" ] || fail "could not read TWENTY_CURRENT_VERSION from $VERSION_FILE"
 
@@ -79,16 +102,10 @@ echo "docker RAM: ${memory_gb} GB (need ${MIN_MEMORY_GB}), free disk for images:
 [ "$memory_gb" -ge "$MIN_MEMORY_GB" ] || fail "not enough memory for the front build; add RAM or swap, or lower MIN_MEMORY_GB at your own risk"
 [ "$disk_gb" -ge "$MIN_DISK_GB" ] || fail "not enough free disk where docker stores images (an out-of-space error would stop the build midway)"
 
-native_arch="$(docker info --format '{{.Architecture}}')"
-case "$native_arch" in
-  x86_64) native_platform="linux/amd64" ;;
-  aarch64 | arm64) native_platform="linux/arm64" ;;
-  *) native_platform="unknown" ;;
-esac
-
 IFS=',' read -r -a platform_list <<< "$PLATFORMS"
 for platform in "${platform_list[@]}"; do
   [ "$platform" = "$native_platform" ] && continue
+  [ "$allow_emulation" = "1" ] || fail "$platform is not the native platform ($native_platform) of this machine, and building it under emulation fails for this image (lingui extract times out). Build it on a $platform machine and join the tags with docker buildx imagetools create, or pass --allow-emulation to try anyway"
   if ! docker run --rm --platform "$platform" alpine uname -m >/dev/null 2>&1; then
     if [ "$install_emulation" = "1" ]; then
       echo "installing QEMU handlers for $platform (privileged container)"
@@ -98,7 +115,7 @@ for platform in "${platform_list[@]}"; do
       fail "cannot run $platform containers here. Install emulation once with: docker run --privileged --rm tonistiivi/binfmt --install all (or pass --install-emulation)"
     fi
   fi
-  echo "note: $platform is built under emulation and is much slower than the native $native_platform"
+  echo "warning: $platform is built under emulation: very slow, and lingui extract is expected to time out"
 done
 
 if [ "$push" = "1" ]; then
