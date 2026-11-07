@@ -51,3 +51,9 @@ Last sync (2026-11-05, details in section 9 of `docs/oidc-sso-roadmap.md`): upst
 ## Database
 
 One table, created by a hand-written instance command in `migrations/` with a fixed version `'2.51.0'` (do not import `TWENTY_CURRENT_VERSION`). SQL is idempotent. See section 3.5 of the roadmap.
+
+## Building the image without GitHub Actions
+
+`scripts/fork/build-image.sh` builds the same image as the "Fork build GHCR image" workflow on any machine with Docker and buildx. Run it from a clean checkout of the commit to build (no uncommitted or untracked files): `bash scripts/fork/build-image.sh --dry-run` runs the checks (a reachable Docker daemon, its memory and disk, the `run-instance-commands` step in `entrypoint.sh`, credentials for `--push`) and prints the build command. Without `--push` it writes an OCI archive; the archive and the build log go to `--output-dir` (default `~/twenty-image-output`, outside the checkout). `--push` publishes `ghcr.io/ulanproger/twenty:sha-<10 chars>-<arch>`: set `GHCR_TOKEN` with `write:packages` or log in to ghcr.io first; a login the script made itself is removed afterwards, a login that existed before stays.
+
+It builds only the native platform of the machine. A foreign platform built under emulation fails for this image: `lingui extract` starts worker threads and the `threads` library gives each 10 s to answer, which QEMU does not meet (`--allow-emulation` forces it). Build each platform on a machine of its own architecture and join the tags: `docker buildx imagetools create -t ghcr.io/ulanproger/twenty:sha-<10 chars> ...:sha-<10 chars>-amd64 ...:sha-<10 chars>-arm64`.
