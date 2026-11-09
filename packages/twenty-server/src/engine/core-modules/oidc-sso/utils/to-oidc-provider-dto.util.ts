@@ -22,22 +22,21 @@ export const toOidcProviderDTO = ({
   updatedAt,
 });
 
+// The global provider has no row, so it reports the process start instead of a new time on every query.
+const OIDC_GLOBAL_PROVIDER_TIMESTAMP = new Date();
+
 export const toGlobalOidcProviderDTO = ({
   id,
   name,
   issuer,
   clientId,
-}: OidcGlobalProvider): OidcProviderDTO => {
-  const now = new Date();
-
-  return {
-    id,
-    name,
-    issuer,
-    clientId,
-    status: 'active',
-    isGlobal: true,
-    createdAt: now,
-    updatedAt: now,
-  };
-};
+}: OidcGlobalProvider): OidcProviderDTO => ({
+  id,
+  name,
+  issuer,
+  clientId,
+  status: 'active',
+  isGlobal: true,
+  createdAt: OIDC_GLOBAL_PROVIDER_TIMESTAMP,
+  updatedAt: OIDC_GLOBAL_PROVIDER_TIMESTAMP,
+});

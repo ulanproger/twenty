@@ -68,7 +68,7 @@ OIDC_NAME=Company sign-in   # optional, "OIDC" by default
 - The provider turns on only when the issuer, client id and client secret are all set and the issuer is valid (`https` in production). Otherwise nothing changes and the log gets a warning.
 - While it is on, the sign-in page of every workspace shows one button named `OIDC_NAME`, and per-workspace setup is switched off: Settings, Security shows it read-only, and create, update and delete are rejected.
 - Providers created earlier in workspaces are not deleted but are not used. Remove the variables and they work again.
-- Access rules do not change: a new user signs in by invitation only, `email_verified` is required. The secret comes from the environment and never reaches the interface.
+- The provider is available in every workspace of the instance: there is no per-workspace switch (workspaces have no SSO flag). The only check on a workspace is membership, an invitation or an approved email domain. Access rules are the same as before: a new user signs in by invitation only, `email_verified` is required. The secret comes from the environment and never reaches the interface.
 - Changing the environment of the server usually means restarting the container.
 
 ## What is not there yet
