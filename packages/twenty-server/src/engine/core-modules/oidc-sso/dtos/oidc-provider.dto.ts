@@ -20,6 +20,9 @@ export class OidcProviderDTO {
   @Field(() => String)
   status: WorkspaceOidcProviderEntity['status'];
 
+  @Field(() => Boolean)
+  isGlobal: boolean;
+
   @Field(() => Date)
   createdAt: Date;
 

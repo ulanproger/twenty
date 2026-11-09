@@ -22,12 +22,19 @@ export const SettingsOidcProvidersSection = () => {
     fetchPolicy: 'network-only',
   });
 
+  const hasGlobalProvider =
+    data?.oidcProviders.some((provider) => provider.isGlobal) ?? false;
+
   return (
     <Section.Root>
       <ToastOnQueryErrorEffect error={error} />
       <Section.Header
         title={t`OIDC`}
-        description={t`Let users sign in with your OpenID Connect provider`}
+        description={
+          hasGlobalProvider
+            ? t`Set up for the whole platform by the server administrator`
+            : t`Let users sign in with your OpenID Connect provider`
+        }
       />
       <SettingsListCard
         items={data?.oidcProviders ?? []}
@@ -36,7 +43,7 @@ export const SettingsOidcProvidersSection = () => {
         getItemDescription={(provider) => provider.issuer}
         RowIcon={IconLock}
         RowRightComponent={SettingsOidcProviderRowMenu}
-        hasFooter
+        hasFooter={!hasGlobalProvider}
         footerButtonLabel={t`Add OIDC provider`}
         onFooterButtonClick={() => openDialog(CREATE_DIALOG_ID)}
       />

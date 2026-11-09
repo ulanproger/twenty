@@ -14,11 +14,12 @@ import { OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/o
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { SecretEncryptionModule } from 'src/engine/core-modules/secret-encryption/secret-encryption.module';
 import { SecureHttpClientModule } from 'src/engine/core-modules/secure-http-client/secure-http-client.module';
+import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { UserModule } from 'src/engine/core-modules/user/user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([WorkspaceOidcProviderEntity]),
+    TypeOrmModule.forFeature([WorkspaceOidcProviderEntity, WorkspaceEntity]),
     AuthModule,
     UserModule,
     GuardRedirectModule,

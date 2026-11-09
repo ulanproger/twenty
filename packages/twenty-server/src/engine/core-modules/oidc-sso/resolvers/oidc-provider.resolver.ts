@@ -11,7 +11,10 @@ import { CreateOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/c
 import { DeleteOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/delete-oidc-provider.input';
 import { OidcProviderDTO } from 'src/engine/core-modules/oidc-sso/dtos/oidc-provider.dto';
 import { UpdateOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/update-oidc-provider.input';
-import { toOidcProviderDTO } from 'src/engine/core-modules/oidc-sso/utils/to-oidc-provider-dto.util';
+import {
+  toGlobalOidcProviderDTO,
+  toOidcProviderDTO,
+} from 'src/engine/core-modules/oidc-sso/utils/to-oidc-provider-dto.util';
 import { OidcSsoGraphqlApiExceptionFilter } from 'src/engine/core-modules/oidc-sso/filters/oidc-sso-graphql-api-exception.filter';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
@@ -50,6 +53,12 @@ export class OidcProviderResolver {
   async oidcProviders(
     @AuthWorkspace() { id: workspaceId }: WorkspaceEntity,
   ): Promise<OidcProviderDTO[]> {
+    const globalProvider = this.oidcProviderService.getGlobalProvider();
+
+    if (globalProvider !== null) {
+      return [toGlobalOidcProviderDTO(globalProvider)];
+    }
+
     const providers =
       await this.oidcProviderService.findAllByWorkspace(workspaceId);
 

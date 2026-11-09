@@ -22,6 +22,7 @@ describe('toOidcProviderDTO', () => {
       issuer: 'https://idp.example.com',
       clientId: 'client-1',
       status: 'active',
+      isGlobal: false,
       createdAt,
       updatedAt: createdAt,
     });

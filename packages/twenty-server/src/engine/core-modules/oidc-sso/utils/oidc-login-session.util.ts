@@ -6,6 +6,8 @@ export type OidcLogin = {
   nonce: string;
   codeVerifier: string;
   providerId: string;
+  // Set only for the global provider, which has no workspace of its own.
+  workspaceId: string | null;
   workspaceInviteHash: string | null;
   createdAt: number;
 };
@@ -20,12 +22,20 @@ const isOidcLogin = (value: unknown): value is OidcLogin =>
   isString(value.nonce) &&
   isString(value.codeVerifier) &&
   isString(value.providerId) &&
+  (value.workspaceId === undefined ||
+    value.workspaceId === null ||
+    isString(value.workspaceId)) &&
   (value.workspaceInviteHash === null || isString(value.workspaceInviteHash)) &&
   typeof value.createdAt === 'number';
 
 // Session data comes back from Redis as unknown, so it is re-validated on every read.
+// A login stored before workspaceId existed has no such key, it reads as null.
 const parseOidcLogins = (logins: unknown): OidcLogin[] =>
-  Array.isArray(logins) ? logins.filter(isOidcLogin) : [];
+  Array.isArray(logins)
+    ? logins
+        .filter(isOidcLogin)
+        .map((login) => ({ ...login, workspaceId: login.workspaceId ?? null }))
+    : [];
 
 export const addOidcLogin = ({
   logins,

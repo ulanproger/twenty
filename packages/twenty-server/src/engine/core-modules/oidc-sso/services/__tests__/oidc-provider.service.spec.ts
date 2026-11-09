@@ -1,10 +1,20 @@
 import { QueryFailedError } from 'typeorm';
 
+import { OIDC_GLOBAL_PROVIDER_ID } from 'src/engine/core-modules/oidc-sso/constants/oidc-global-provider-id.constant';
 import { OidcSsoException } from 'src/engine/core-modules/oidc-sso/oidc-sso.exception';
 import { type OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { type SecretEncryptionService } from 'src/engine/core-modules/secret-encryption/secret-encryption.service';
 import { type TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
+
+const WORKSPACE_ID = 'c2a0f5d2-3a54-4b7e-9d6c-1f0e8a7b6c5d';
+
+const globalEnv = {
+  OIDC_ISSUER: 'https://idp.example.com/auth/v1',
+  OIDC_CLIENT_ID: 'global-client',
+  OIDC_CLIENT_SECRET: 'global-secret',
+  OIDC_NAME: 'Rauthy',
+};
 
 const input = {
   workspaceId: 'workspace-a',
@@ -25,12 +35,16 @@ const buildService = ({
     status: 'active',
   },
   deleteAffected = 1,
+  globalEnv = {},
+  workspace = { id: WORKSPACE_ID },
 }: {
   nodeEnv?: string;
   discoveryError?: Error;
   saveError?: Error;
   stored?: Record<string, unknown> | null;
   deleteAffected?: number;
+  globalEnv?: Record<string, string>;
+  workspace?: { id: string } | null;
 } = {}) => {
   const repository = {
     create: jest.fn((value) => value),
@@ -55,7 +69,14 @@ const buildService = ({
   const encryption = {
     encryptVersioned: jest.fn((plaintext: string) => `enc:v2:${plaintext}`),
   };
-  const config = { get: jest.fn(() => nodeEnv) };
+  const workspaceRepository = {
+    findOne: jest.fn().mockResolvedValue(workspace),
+  };
+  const config = {
+    get: jest.fn((key: string) =>
+      key === 'NODE_ENV' ? nodeEnv : globalEnv[key],
+    ),
+  };
 
   return {
     repository,
@@ -65,7 +86,9 @@ const buildService = ({
       encryption as unknown as SecretEncryptionService,
       protocol as unknown as OidcProtocolService,
       config as unknown as TwentyConfigService,
+      workspaceRepository as never,
     ),
+    workspaceRepository,
   };
 };
 
@@ -213,6 +236,125 @@ describe('OidcProviderService', () => {
           where: { workspaceId: 'workspace-a', status: 'active' },
         }),
       );
+    });
+  });
+
+  describe('with a global provider', () => {
+    it('lists only the global provider as active for any workspace', async () => {
+      const { service, repository } = buildService({ globalEnv });
+
+      await expect(
+        service.findActiveByWorkspace('workspace-a'),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          id: OIDC_GLOBAL_PROVIDER_ID,
+          name: 'Rauthy',
+        }),
+      ]);
+      expect(repository.find).not.toHaveBeenCalled();
+    });
+
+    it('rejects create, update and delete', async () => {
+      const { service, repository } = buildService({ globalEnv });
+
+      await expectCode(service.create(input), 'GLOBAL_PROVIDER_ACTIVE');
+      await expectCode(
+        service.update({ workspaceId: 'workspace-a', id: 'p1', name: 'New' }),
+        'GLOBAL_PROVIDER_ACTIVE',
+      );
+      await expectCode(
+        service.delete({ workspaceId: 'workspace-a', id: 'p1' }),
+        'GLOBAL_PROVIDER_ACTIVE',
+      );
+      expect(repository.save).not.toHaveBeenCalled();
+      expect(repository.delete).not.toHaveBeenCalled();
+    });
+
+    it('resolves the global id to the workspace from the login url', async () => {
+      const { service, workspaceRepository } = buildService({ globalEnv });
+
+      await expect(
+        service.findByIdWithWorkspace(OIDC_GLOBAL_PROVIDER_ID, WORKSPACE_ID),
+      ).resolves.toMatchObject({
+        id: OIDC_GLOBAL_PROVIDER_ID,
+        workspaceId: WORKSPACE_ID,
+        status: 'active',
+        clientId: 'global-client',
+      });
+      expect(workspaceRepository.findOne).toHaveBeenCalledWith({
+        where: { id: WORKSPACE_ID },
+      });
+    });
+
+    it.each([undefined, 'not-a-uuid'])(
+      'refuses the global id without a usable workspace id (%s)',
+      async (workspaceId) => {
+        const { service, workspaceRepository } = buildService({ globalEnv });
+
+        await expect(
+          service.findByIdWithWorkspace(OIDC_GLOBAL_PROVIDER_ID, workspaceId),
+        ).resolves.toBeNull();
+        expect(workspaceRepository.findOne).not.toHaveBeenCalled();
+      },
+    );
+
+    it('refuses an unknown workspace', async () => {
+      const { service } = buildService({ globalEnv, workspace: null });
+
+      await expect(
+        service.findByIdWithWorkspace(OIDC_GLOBAL_PROVIDER_ID, WORKSPACE_ID),
+      ).resolves.toBeNull();
+    });
+
+    it('ignores stored providers while it is on', async () => {
+      const { service, repository } = buildService({ globalEnv });
+
+      await expect(
+        service.findByIdWithWorkspace(
+          '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
+          WORKSPACE_ID,
+        ),
+      ).resolves.toBeNull();
+      expect(repository.findOne).not.toHaveBeenCalled();
+    });
+
+    it('returns the plaintext secret from env', () => {
+      const { service } = buildService({ globalEnv });
+
+      expect(
+        service.decryptClientSecret({
+          id: OIDC_GLOBAL_PROVIDER_ID,
+          workspaceId: WORKSPACE_ID,
+        }),
+      ).toBe('global-secret');
+    });
+  });
+
+  describe('without a global provider', () => {
+    it('ignores a workspace id for a stored provider', async () => {
+      const { service, repository } = buildService();
+
+      await service.findByIdWithWorkspace(
+        '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
+        WORKSPACE_ID,
+      );
+
+      expect(repository.findOne).toHaveBeenCalledWith({
+        where: { id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d' },
+        relations: { workspace: true },
+      });
+    });
+
+    it('stays off with only part of the variables or a bad issuer', () => {
+      const { service: partial } = buildService({
+        globalEnv: { OIDC_ISSUER: globalEnv.OIDC_ISSUER },
+      });
+      const { service: badIssuer } = buildService({
+        globalEnv: { ...globalEnv, OIDC_ISSUER: 'http://idp.example.com' },
+      });
+
+      expect(partial.getGlobalProvider()).toBeNull();
+      expect(badIssuer.getGlobalProvider()).toBeNull();
     });
   });
 });

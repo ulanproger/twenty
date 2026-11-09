@@ -9,6 +9,7 @@ const buildLogin = (overrides: Partial<OidcLogin> = {}): OidcLogin => ({
   nonce: 'nonce-1',
   codeVerifier: 'verifier-1',
   providerId: 'provider-1',
+  workspaceId: null,
   workspaceInviteHash: null,
   createdAt: 1_000,
   ...overrides,
@@ -120,4 +121,36 @@ describe('takeOidcLogin', () => {
       ).toEqual({ status: 'missing', remainingLogins: [] });
     },
   );
+});
+
+describe('oidc login without a stored workspaceId', () => {
+  it('reads a login saved before workspaceId existed as null', () => {
+    const { workspaceId: _workspaceId, ...legacyLogin } = buildLogin();
+
+    const result = takeOidcLogin({
+      logins: [legacyLogin],
+      state: 'state-1',
+      now: 2_000,
+      maxAgeMs: 10_000,
+    });
+
+    expect(result).toMatchObject({
+      status: 'found',
+      login: { workspaceId: null },
+    });
+  });
+
+  it('keeps a stored workspaceId', () => {
+    const result = takeOidcLogin({
+      logins: [buildLogin({ workspaceId: 'workspace-a' })],
+      state: 'state-1',
+      now: 2_000,
+      maxAgeMs: 10_000,
+    });
+
+    expect(result).toMatchObject({
+      status: 'found',
+      login: { workspaceId: 'workspace-a' },
+    });
+  });
 });

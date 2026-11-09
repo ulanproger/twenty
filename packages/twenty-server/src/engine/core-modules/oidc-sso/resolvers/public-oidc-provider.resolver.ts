@@ -4,6 +4,7 @@ import { Args, Query } from '@nestjs/graphql';
 import { MetadataResolver } from 'src/engine/api/graphql/graphql-config/decorators/metadata-resolver.decorator';
 import { WorkspaceDomainsService } from 'src/engine/core-modules/domain/workspace-domains/services/workspace-domains.service';
 import { PreventNestToAutoLogGraphqlErrorsFilter } from 'src/engine/core-modules/graphql/filters/prevent-nest-to-auto-log-graphql-errors.filter';
+import { OIDC_GLOBAL_PROVIDER_ID } from 'src/engine/core-modules/oidc-sso/constants/oidc-global-provider-id.constant';
 import { PublicOidcProviderDTO } from 'src/engine/core-modules/oidc-sso/dtos/public-oidc-provider.dto';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { buildOidcLoginUrl } from 'src/engine/core-modules/oidc-sso/utils/build-oidc-login-url.util';
@@ -45,7 +46,11 @@ export class PublicOidcProviderResolver {
     return providers.map(({ id, name }) => ({
       id,
       name,
-      loginUrl: buildOidcLoginUrl(serverUrl, id),
+      loginUrl: buildOidcLoginUrl(
+        serverUrl,
+        id,
+        id === OIDC_GLOBAL_PROVIDER_ID ? workspace.id : undefined,
+      ),
     }));
   }
 

@@ -66,6 +66,16 @@ export const SettingsOidcProviderRowMenu = ({
     }
   };
 
+  if (provider.isGlobal) {
+    return (
+      <StyledRowRight>
+        <Status color="green" weight="medium">
+          {t`Active`}
+        </Status>
+      </StyledRowRight>
+    );
+  }
+
   return (
     <StyledRowRight>
       <Status color={isActive ? 'green' : 'gray'} weight="medium">

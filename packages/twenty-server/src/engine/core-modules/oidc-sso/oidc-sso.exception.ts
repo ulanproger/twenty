@@ -8,7 +8,8 @@ export type OidcSsoExceptionCode =
   | 'PROVIDER_NOT_FOUND'
   | 'PROVIDER_ALREADY_EXISTS'
   | 'INVALID_ISSUER'
-  | 'ISSUER_DISCOVERY_FAILED';
+  | 'ISSUER_DISCOVERY_FAILED'
+  | 'GLOBAL_PROVIDER_ACTIVE';
 
 const getUserFriendlyMessage = (
   code: OidcSsoExceptionCode,
@@ -22,6 +23,8 @@ const getUserFriendlyMessage = (
       return msg`Invalid issuer URL.`;
     case 'ISSUER_DISCOVERY_FAILED':
       return msg`Could not load the OpenID configuration from the issuer.`;
+    case 'GLOBAL_PROVIDER_ACTIVE':
+      return msg`Single sign-on is configured for the whole platform and cannot be changed here.`;
     default:
       return assertUnreachable(code);
   }

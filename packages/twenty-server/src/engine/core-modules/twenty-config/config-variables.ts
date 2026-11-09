@@ -2685,6 +2685,41 @@ export class ConfigVariables {
   })
   @IsOptional()
   APP_REGISTRY_TOKEN: string;
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.SERVER_CONFIG,
+    description:
+      'Issuer URL of the platform-wide OIDC provider (fork). With the client id and secret it replaces per-workspace OIDC setup',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  OIDC_ISSUER: string;
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.SERVER_CONFIG,
+    description: 'Client ID of the platform-wide OIDC provider (fork)',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  OIDC_CLIENT_ID: string;
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.SERVER_CONFIG,
+    isSensitive: true,
+    description: 'Client secret of the platform-wide OIDC provider (fork)',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  OIDC_CLIENT_SECRET: string;
+
+  @ConfigVariablesMetadata({
+    group: ConfigVariablesGroup.SERVER_CONFIG,
+    description:
+      'Text of the sign-in button of the platform-wide OIDC provider (fork), "OIDC" by default',
+    type: ConfigVariableType.STRING,
+  })
+  @IsOptional()
+  OIDC_NAME: string;
 }
 
 export const validate = (config: Record<string, unknown>): ConfigVariables => {

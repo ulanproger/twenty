@@ -1,6 +1,6 @@
 # OIDC SSO: administrator guide
 
-Sign in to a Twenty workspace through a corporate OpenID Connect provider (Keycloak, Okta, Auth0, Google and others). Only the Authorization Code flow with PKCE S256 is supported. Providers are configured per workspace and a workspace can have several.
+Sign in to a Twenty workspace through a corporate OpenID Connect provider (Keycloak, Okta, Auth0, Google and others). Only the Authorization Code flow with PKCE S256 is supported. Providers are configured per workspace and a workspace can have several. Alternatively one provider can be set for the whole platform through environment variables ([below](#one-provider-for-the-whole-platform)).
 
 This is the fork's own implementation. The old Enterprise "SSO" block on the security page is hidden unless the instance has a valid Enterprise plan, and has nothing to do with OIDC providers.
 
@@ -52,6 +52,24 @@ Each row in the OIDC card has a menu:
 - Delete: after confirmation removes the provider, users can no longer sign in through it.
 
 You can add several providers, the sign-in screen shows a button for each. The same Issuer with the same Client ID cannot be added twice.
+
+## One provider for the whole platform
+
+If the instance has one corporate IdP for every workspace, set it in the server environment:
+
+```
+OIDC_ISSUER=https://idp.example.com/auth/v1
+OIDC_CLIENT_ID=twenty
+OIDC_CLIENT_SECRET=...
+OIDC_NAME=Company sign-in   # optional, "OIDC" by default
+```
+
+- One client and one redirect URI in the IdP are enough: `https://<your-address>/auth/oidc-sso/callback`.
+- The provider turns on only when the issuer, client id and client secret are all set and the issuer is valid (`https` in production). Otherwise nothing changes and the log gets a warning.
+- While it is on, the sign-in page of every workspace shows one button named `OIDC_NAME`, and per-workspace setup is switched off: Settings, Security shows it read-only, and create, update and delete are rejected.
+- Providers created earlier in workspaces are not deleted but are not used. Remove the variables and they work again.
+- Access rules do not change: a new user signs in by invitation only, `email_verified` is required. The secret comes from the environment and never reaches the interface.
+- Changing the environment of the server usually means restarting the container.
 
 ## What is not there yet
 

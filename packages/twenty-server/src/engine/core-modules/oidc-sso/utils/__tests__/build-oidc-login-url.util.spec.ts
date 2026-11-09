@@ -12,4 +12,12 @@ describe('buildOidcLoginUrl', () => {
       buildOidcLoginUrl('http://localhost:3000/base?x=1#y', 'provider-1'),
     ).toBe('http://localhost:3000/auth/oidc-sso/login/provider-1');
   });
+
+  it('adds the workspace id only when it is given', () => {
+    expect(
+      buildOidcLoginUrl('https://crm.example.com', 'provider-1', 'workspace-a'),
+    ).toBe(
+      'https://crm.example.com/auth/oidc-sso/login/provider-1?workspaceId=workspace-a',
+    );
+  });
 });
