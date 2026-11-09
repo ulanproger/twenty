@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import { Command, CommandRunner, Option } from 'nest-commander';
 import { DataSource } from 'typeorm';
 
+import { alignInstanceCommandCreatedAt } from 'src/engine/core-modules/oidc-sso/utils/align-instance-command-created-at.util';
 import { TWENTY_PREVIOUS_VERSIONS } from 'src/engine/core-modules/upgrade/constants/twenty-previous-versions.constant';
 import { InstanceCommandRunnerService } from 'src/engine/core-modules/upgrade/services/instance-command-runner.service';
 import { UpgradeCommandRegistryService } from 'src/engine/core-modules/upgrade/services/upgrade-command-registry.service';
@@ -105,6 +106,11 @@ export class RunInstanceCommandsCommand extends CommandRunner {
       );
       throw error;
     } finally {
+      // Fork (S9): keep the upgrade cursor in sequence order, see the util.
+      await alignInstanceCommandCreatedAt({
+        dataSource: this.dataSource,
+        upgradeSequenceReaderService: this.upgradeSequenceReaderService,
+      });
       await this.safeInvalidateUpgradeStatusCache();
     }
   }

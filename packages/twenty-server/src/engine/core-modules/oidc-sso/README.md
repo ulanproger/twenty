@@ -34,20 +34,25 @@ All are additive (0 deleted lines) except S4, which rewrites the legacy SSO sect
 | S5 | `twenty-front/.../SignInUpWorkspaceScopeForm.tsx` | +1 import, `{!shouldUseBypass && <SignInUpWithOidc />}` | keep upstream, re-add both |
 | S7 | `test/integration/endpoint-permissions/__snapshots__/endpoint-permission-declarations.integration-spec.ts.snap` | entries for our controller and resolvers | regenerate, do not hand-edit (see below) |
 | S8 | `twenty-docker/twenty/entrypoint.sh` | +5 lines: `yarn command:prod run-instance-commands` after `upgrade`, a failure only warns | keep upstream, re-add the block after the `upgrade` call |
+| S9 | `database/commands/run-instance-commands.command.ts` | +1 import, +1 call `alignInstanceCommandCreatedAt(...)` in the `finally` block before the cache invalidation (logic in `utils/align-instance-command-created-at.util.ts`) | keep upstream, re-add both |
 
-S6 (`SignInUpWorkspaceScopeFormEffect.tsx`, `useHasMultipleAuthMethods.ts`) is not needed: the effect has fixed dependencies and would run before our query loads. The two paths stay in `oidc-seams.txt`, so the seven seams above are the active ones.
+S6 (`SignInUpWorkspaceScopeFormEffect.tsx`, `useHasMultipleAuthMethods.ts`) is not needed: the effect has fixed dependencies and would run before our query loads. The two paths stay in `oidc-seams.txt`, so the eight seams above are the active ones (S1-S5, S7-S9).
 
 ## Syncing with upstream
 
 1. `git fetch upstream && git merge upstream/main` (merge, not rebase). `git config rerere.enabled true`.
 2. Resolve seam conflicts with the table above.
-3. `bash scripts/fork/check-oidc-seams.sh` must report no violation except the known `max-workspaces-without-organization-key.constant.ts` (workspace limit from #13, not a seam yet), and the seam files it counts must be the seven above. Run it after the merge commit exists, it compares with the merge base.
+3. `bash scripts/fork/check-oidc-seams.sh` must report no violation except the known `max-workspaces-without-organization-key.constant.ts` (workspace limit from #13, not a seam yet), and the seam files it counts must be the eight above. Run it after the merge commit exists, it compares with the merge base.
 4. `yarn install`, then `npx tsgo -p tsconfig.json --noEmit` in `twenty-server` and `twenty-front`, unit tests of this module, the smoke scripts.
 5. Regenerate the S7 snapshot with the integration test, never by hand: from `packages/twenty-server`, `NODE_OPTIONS=--max-old-space-size=10240 NODE_ENV=test npx jest --config ./jest-integration.config.ts test/integration/endpoint-permissions -u`. It needs the test database prepared by `NODE_ENV=test nx database:reset`. If the run fails on roles, flush the cache with `node dist/command/command.js cache:flush`.
    `-u` accepts any drift, so afterwards confirm our entries survived: `grep -c -E '"(OidcProviderResolver|OidcSsoAuthController|PublicOidcProviderResolver)\.'` on the snapshot must print 7 (4 resolver operations, 2 controller routes, 1 public query), and read the snapshot `git diff`.
 6. After the sync reached the default branch, run `bash scripts/fork/upstream-workflows.sh status`: workflows that arrive from upstream are enabled. It lists every workflow that can start on its own (most are already disabled, the list is long) and exits 1 only if one of them is still enabled, that exit code is the signal. `disable` turns the enabled ones off in GitHub, `enable` reverses it (it also re-enables ones disabled by hand). Our `fork-build-ghcr-image.yaml` and the workflows that only run by hand or are called by others stay as they are.
 
 Last sync (2026-11-05, details in section 9 of `docs/oidc-sso-roadmap.md`): upstream #29661 replaced the old guards with `AccessPolicyGuard`, so `oidc-provider.resolver.ts` was ported. Use the Node version upstream requires (`engines` in `package.json`).
+
+## Upgrade cursor
+
+The upgrade-aware ORM takes its cursor from the newest instance row of `core.upgradeMigration`. S8 runs our `2.51.0` command after `upgrade`, so its row would be the newest and the cursor would fall behind already applied renames (prod, 2026-11-09: `allowedIframeOrigins does not exist`, 503). S9 moves only that one row to a timestamp between its neighbours in the upgrade sequence; it writes nothing when the newest row is already the furthest one.
 
 ## Database
 
