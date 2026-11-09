@@ -1,3 +1,5 @@
+import { isDefined } from 'twenty-shared/utils';
+
 import { OIDC_SSO_LOGIN_PATH } from 'src/engine/core-modules/oidc-sso/constants/oidc-sso-paths.constant';
 
 // workspaceId is only for the global provider, which cannot know the workspace by itself.
@@ -12,7 +14,7 @@ export const buildOidcLoginUrl = (
   loginUrl.search = '';
   loginUrl.hash = '';
 
-  if (workspaceId !== undefined) {
+  if (isDefined(workspaceId)) {
     loginUrl.searchParams.set('workspaceId', workspaceId);
   }
 

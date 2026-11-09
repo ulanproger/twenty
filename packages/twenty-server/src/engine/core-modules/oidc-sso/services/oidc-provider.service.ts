@@ -29,7 +29,7 @@ import { isUniqueViolationError } from 'src/engine/metadata-modules/ai/ai-chat/u
 @Injectable()
 export class OidcProviderService {
   private readonly logger = new Logger(OidcProviderService.name);
-  private hasWarnedAboutInvalidGlobalIssuer = false;
+  private lastWarnedGlobalStatus: 'incomplete' | 'invalid-issuer' | null = null;
 
   constructor(
     // The public login and callback routes know only the provider id, so every
@@ -56,14 +56,26 @@ export class OidcProviderService {
         NodeEnvironment.DEVELOPMENT,
     });
 
-    if (
-      result.status === 'invalid-issuer' &&
-      !this.hasWarnedAboutInvalidGlobalIssuer
-    ) {
-      this.hasWarnedAboutInvalidGlobalIssuer = true;
-      this.logger.warn(
-        'OIDC_ISSUER is not a valid https URL, the global OIDC provider stays off',
-      );
+    // Warns once per kind of misconfiguration and re-arms after a good or an empty setup.
+    const problem =
+      result.status === 'incomplete' || result.status === 'invalid-issuer'
+        ? result.status
+        : null;
+
+    if (problem !== this.lastWarnedGlobalStatus) {
+      this.lastWarnedGlobalStatus = problem;
+
+      if (problem === 'incomplete') {
+        this.logger.warn(
+          'OIDC_ISSUER, OIDC_CLIENT_ID and OIDC_CLIENT_SECRET must all be set, the global OIDC provider stays off',
+        );
+      }
+
+      if (problem === 'invalid-issuer') {
+        this.logger.warn(
+          'OIDC_ISSUER is not a valid https URL, the global OIDC provider stays off',
+        );
+      }
     }
 
     return result.status === 'on' ? result.provider : null;

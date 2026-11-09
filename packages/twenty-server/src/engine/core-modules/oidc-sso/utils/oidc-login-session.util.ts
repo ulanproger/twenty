@@ -6,7 +6,8 @@ export type OidcLogin = {
   nonce: string;
   codeVerifier: string;
   providerId: string;
-  // Set only for the global provider, which has no workspace of its own.
+  // Matters only for the global provider, which has no workspace of its own;
+  // stored providers carry theirs, and the lookup ignores this value for them.
   workspaceId: string | null;
   workspaceInviteHash: string | null;
   createdAt: number;

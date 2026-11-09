@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common';
+
 import { QueryFailedError } from 'typeorm';
 
 import { OIDC_GLOBAL_PROVIDER_ID } from 'src/engine/core-modules/oidc-sso/constants/oidc-global-provider-id.constant';
@@ -9,7 +11,7 @@ import { type TwentyConfigService } from 'src/engine/core-modules/twenty-config/
 
 const WORKSPACE_ID = 'c2a0f5d2-3a54-4b7e-9d6c-1f0e8a7b6c5d';
 
-const globalEnv = {
+const globalEnv: Record<string, string> = {
   OIDC_ISSUER: 'https://idp.example.com/auth/v1',
   OIDC_CLIENT_ID: 'global-client',
   OIDC_CLIENT_SECRET: 'global-secret',
@@ -73,7 +75,7 @@ const buildService = ({
     findOne: jest.fn().mockResolvedValue(workspace),
   };
   const config = {
-    get: jest.fn((key: string) =>
+    get: jest.fn<string | undefined, [string]>((key) =>
       key === 'NODE_ENV' ? nodeEnv : globalEnv[key],
     ),
   };
@@ -89,6 +91,7 @@ const buildService = ({
       workspaceRepository as never,
     ),
     workspaceRepository,
+    config,
   };
 };
 
@@ -343,6 +346,34 @@ describe('OidcProviderService', () => {
         where: { id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d' },
         relations: { workspace: true },
       });
+    });
+
+    it('warns once per kind of misconfiguration and again after it was fixed', () => {
+      const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+      const { service, config } = buildService({
+        globalEnv: { OIDC_ISSUER: globalEnv.OIDC_ISSUER },
+      });
+
+      service.getGlobalProvider();
+      service.getGlobalProvider();
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).toHaveBeenLastCalledWith(
+        expect.stringContaining('must all be set'),
+      );
+
+      config.get.mockImplementation((key: string) => globalEnv[key]);
+      expect(service.getGlobalProvider()).not.toBeNull();
+
+      config.get.mockImplementation(
+        (key: string) => ({ ...globalEnv, OIDC_ISSUER: 'not a url' })[key],
+      );
+      service.getGlobalProvider();
+      expect(warn).toHaveBeenCalledTimes(2);
+      expect(warn).toHaveBeenLastCalledWith(
+        expect.stringContaining('not a valid https URL'),
+      );
+
+      warn.mockRestore();
     });
 
     it('stays off with only part of the variables or a bad issuer', () => {

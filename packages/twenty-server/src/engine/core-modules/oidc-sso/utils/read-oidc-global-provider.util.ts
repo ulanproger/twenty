@@ -16,10 +16,11 @@ export type OidcGlobalProvider = {
 
 export type ReadOidcGlobalProviderResult =
   | { status: 'off' }
+  | { status: 'incomplete' }
   | { status: 'invalid-issuer' }
   | { status: 'on'; provider: OidcGlobalProvider };
 
-// Issuer, client id and secret must all be set; a bad issuer counts as off so a typo cannot half-enable it.
+// Issuer, client id and secret must all be set; a partial setup or a bad issuer counts as off so a typo cannot half-enable it.
 export const readOidcGlobalProvider = ({
   issuer,
   clientId,
@@ -33,15 +34,28 @@ export const readOidcGlobalProvider = ({
   name: string | undefined;
   isDevelopment: boolean;
 }): ReadOidcGlobalProviderResult => {
+  const trimmedIssuer = issuer?.trim();
+  const trimmedClientId = clientId?.trim();
+  const trimmedClientSecret = clientSecret?.trim();
+  const trimmedName = name?.trim();
+
   if (
-    !isNonEmptyString(issuer?.trim()) ||
-    !isNonEmptyString(clientId?.trim()) ||
-    !isNonEmptyString(clientSecret?.trim())
+    ![trimmedIssuer, trimmedClientId, trimmedClientSecret].some(
+      isNonEmptyString,
+    )
   ) {
     return { status: 'off' };
   }
 
-  const normalizedIssuer = normalizeOidcIssuer(issuer);
+  if (
+    !isNonEmptyString(trimmedIssuer) ||
+    !isNonEmptyString(trimmedClientId) ||
+    !isNonEmptyString(trimmedClientSecret)
+  ) {
+    return { status: 'incomplete' };
+  }
+
+  const normalizedIssuer = normalizeOidcIssuer(trimmedIssuer);
 
   if (
     normalizedIssuer === null ||
@@ -54,12 +68,12 @@ export const readOidcGlobalProvider = ({
     status: 'on',
     provider: {
       id: OIDC_GLOBAL_PROVIDER_ID,
-      name: isNonEmptyString(name?.trim())
-        ? name.trim()
+      name: isNonEmptyString(trimmedName)
+        ? trimmedName
         : DEFAULT_OIDC_GLOBAL_PROVIDER_NAME,
       issuer: normalizedIssuer,
-      clientId: clientId.trim(),
-      clientSecret: clientSecret.trim(),
+      clientId: trimmedClientId,
+      clientSecret: trimmedClientSecret,
     },
   };
 };

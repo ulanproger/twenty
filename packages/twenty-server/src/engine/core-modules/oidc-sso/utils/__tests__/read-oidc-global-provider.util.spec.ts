@@ -23,14 +23,25 @@ describe('readOidcGlobalProvider', () => {
     });
   });
 
+  it('is off when nothing is set, blank values count as unset', () => {
+    expect(
+      readOidcGlobalProvider({
+        ...complete,
+        issuer: undefined,
+        clientId: '  ',
+        clientSecret: undefined,
+      }),
+    ).toEqual({ status: 'off' });
+  });
+
   it.each(['issuer', 'clientId', 'clientSecret'] as const)(
-    'is off when %s is missing or blank',
+    'is incomplete when only %s is missing or blank',
     (field) => {
       expect(
         readOidcGlobalProvider({ ...complete, [field]: undefined }),
-      ).toEqual({ status: 'off' });
+      ).toEqual({ status: 'incomplete' });
       expect(readOidcGlobalProvider({ ...complete, [field]: '  ' })).toEqual({
-        status: 'off',
+        status: 'incomplete',
       });
     },
   );
