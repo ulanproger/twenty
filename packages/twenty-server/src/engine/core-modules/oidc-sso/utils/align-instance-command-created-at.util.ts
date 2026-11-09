@@ -26,7 +26,10 @@ export const planInstanceCommandCreatedAtAlignment = ({
 
   const rowsInSequenceOrder = rows
     .filter((row) => indexByName.has(row.name))
-    .sort((a, b) => indexByName.get(a.name)! - indexByName.get(b.name)!);
+    .sort(
+      (left, right) =>
+        indexByName.get(left.name)! - indexByName.get(right.name)!,
+    );
 
   const newestPosition = rowsInSequenceOrder.reduce(
     (newest, row, position) =>
@@ -85,7 +88,7 @@ export const alignInstanceCommandCreatedAt = async ({
       [update.createdAt, update.id],
     );
   } catch (error) {
-    logger.warn(
+    logger.error(
       `Could not align the upgrade cursor: ${
         error instanceof Error ? error.message : String(error)
       }`,
