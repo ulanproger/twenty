@@ -14,6 +14,7 @@ import { UpgradeMigrationService } from 'src/engine/core-modules/upgrade/service
 import { UpgradeSequenceReaderService } from 'src/engine/core-modules/upgrade/services/upgrade-sequence-reader.service';
 import { UpgradeAwareEntityMetadataAdapter } from 'src/engine/twenty-orm/upgrade-aware/upgrade-aware-entity-metadata.adapter';
 
+const EARLY_STEP = '2.5.0_Early_1600000000000';
 const RENAME_STEP = '2.6.0_Rename_1700000000000';
 const INTRODUCE_STEP = '2.7.0_AddColumn_1800000000000';
 const REMOVE_STEP = '2.7.0_DropColumn_1800000000001';
@@ -63,7 +64,7 @@ describe('UpgradeAwareEntityMetadataAdapter', () => {
         {
           provide: UpgradeMigrationService,
           useValue: {
-            getLastAttemptedInstanceCommand: jest.fn().mockResolvedValue(null),
+            getLatestInstanceCommandAttempts: jest.fn().mockResolvedValue([]),
           },
         },
         {
@@ -113,10 +114,9 @@ describe('UpgradeAwareEntityMetadataAdapter', () => {
         {
           provide: UpgradeMigrationService,
           useValue: {
-            getLastAttemptedInstanceCommand: jest.fn().mockResolvedValue({
-              name: REMOVE_STEP,
-              status: 'completed',
-            }),
+            getLatestInstanceCommandAttempts: jest
+              .fn()
+              .mockResolvedValue([{ name: REMOVE_STEP, status: 'completed' }]),
           },
         },
         {
@@ -153,5 +153,51 @@ describe('UpgradeAwareEntityMetadataAdapter', () => {
     expect(visibleColumn.isUpdate).toBe(true);
 
     expect(metadata.columns).toEqual([visibleColumn]);
+  });
+
+  it('puts the cursor at the furthest command in the sequence, not the newest row', async () => {
+    const metadata = {
+      target: RenamedEntity,
+      tableName: 'newEntity',
+      tablePath: 'core.newEntity',
+      givenTableName: 'newEntity',
+      schema: 'core',
+      columns: [],
+    } as unknown as EntityMetadata;
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        UpgradeAwareEntityMetadataAdapter,
+        {
+          provide: UpgradeMigrationService,
+          useValue: {
+            // EARLY_STEP was created last (run out of order) but precedes RENAME_STEP.
+            getLatestInstanceCommandAttempts: jest.fn().mockResolvedValue([
+              { name: RENAME_STEP, status: 'completed' },
+              { name: EARLY_STEP, status: 'completed' },
+            ]),
+          },
+        },
+        {
+          provide: UpgradeSequenceReaderService,
+          useValue: {
+            getUpgradeSequence: jest
+              .fn()
+              .mockReturnValue([{ name: EARLY_STEP }, { name: RENAME_STEP }]),
+          },
+        },
+        {
+          provide: getDataSourceToken(),
+          useValue: { entityMetadatas: [metadata] } as unknown as DataSource,
+        },
+      ],
+    }).compile();
+
+    const adapter = moduleRef.get(UpgradeAwareEntityMetadataAdapter);
+
+    await adapter.onModuleInit();
+    await adapter.refresh();
+
+    expect(metadata.tableName).toBe('newEntity');
   });
 });

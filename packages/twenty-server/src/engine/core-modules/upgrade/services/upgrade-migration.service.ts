@@ -373,6 +373,29 @@ export class UpgradeMigrationService {
     };
   }
 
+  // Latest attempt of every instance command, in no particular order. The
+  // upgrade-aware ORM adapter needs the position in the upgrade sequence, not the
+  // most recently created row: a command run out of order (the fork's
+  // run-instance-commands step) must not pull the cursor back.
+  async getLatestInstanceCommandAttempts(): Promise<
+    { name: string; status: UpgradeMigrationStatus }[]
+  > {
+    return this.upgradeMigrationRepository
+      .createQueryBuilder('migration')
+      .select(['migration.name', 'migration.status'])
+      .where('migration."workspaceId" IS NULL')
+      .andWhere('migration."isInitial" = false')
+      .andWhere(
+        `migration.attempt = (
+          SELECT MAX(sub.attempt)
+          FROM core."upgradeMigration" sub
+          WHERE sub.name = migration.name
+          AND sub."workspaceId" IS NULL
+        )`,
+      )
+      .getMany();
+  }
+
   async getLastAttemptedInstanceCommandOrThrow(): Promise<{
     name: string;
     status: UpgradeMigrationStatus;

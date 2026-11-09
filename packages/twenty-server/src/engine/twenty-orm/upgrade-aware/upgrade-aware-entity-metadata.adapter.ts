@@ -82,21 +82,23 @@ export class UpgradeAwareEntityMetadataAdapter implements OnModuleInit {
   }
 
   async refresh(): Promise<void> {
-    const lastAttempted =
-      await this.upgradeMigrationService.getLastAttemptedInstanceCommand();
+    const attempts =
+      await this.upgradeMigrationService.getLatestInstanceCommandAttempts();
 
-    let nextCursor: number;
+    // Furthest command in sequence order, not the newest row by createdAt.
+    let nextCursor = 0;
 
-    if (!isDefined(lastAttempted)) {
-      nextCursor = 0;
-    } else {
-      const index = this.stepNameToIndex.get(lastAttempted.name);
+    for (const attempt of attempts) {
+      const index = this.stepNameToIndex.get(attempt.name);
 
       if (!isDefined(index)) {
-        nextCursor = 0;
-      } else {
-        nextCursor = lastAttempted.status === 'completed' ? index + 1 : index;
+        continue;
       }
+
+      nextCursor = Math.max(
+        nextCursor,
+        attempt.status === 'completed' ? index + 1 : index,
+      );
     }
 
     if (nextCursor === this.currentCursor) {
