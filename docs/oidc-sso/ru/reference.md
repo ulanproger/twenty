@@ -4,7 +4,7 @@
 
 | Назначение | Адрес |
 |---|---|
-| Начало входа | `GET <SERVER_URL>/auth/oidc-sso/login/<providerId>[?workspaceInviteHash=<hash>]` |
+| Начало входа | `GET <SERVER_URL>/auth/oidc-sso/login/<providerId>[?workspaceInviteHash=<hash>]` (для провайдера платформы к ссылке добавляется `workspaceId=<uuid>`, готовую ссылку отдаёт публичный запрос) |
 | Возврат из IdP (redirect URI) | `GET <SERVER_URL>/auth/oidc-sso/callback` |
 | Админский и публичный API | `POST <SERVER_URL>/metadata` (GraphQL) |
 
@@ -28,8 +28,10 @@
 | `FALLBACK_ENCRYPTION_KEY` | Прежний ключ на время ротации (см. ниже). |
 | `OUTBOUND_HTTP_ALLOWED_INTERNAL_HOSTS` | Список хостов во внутренних сетях, к которым Twenty разрешено ходить (через запятую). Нужен, если IdP стоит в вашей закрытой сети. По умолчанию такие адреса заблокированы. |
 | `NODE_ENV` | Только для локальной разработки: значение `development` разрешает Issuer по `http`. В продакшене не включайте, Issuer должен быть `https`. |
+| `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` | Один провайдер на всю платформу, см. [руководство](guide.md#один-провайдер-на-всю-платформу). Нужны все три. |
+| `OIDC_NAME` | Текст кнопки входа провайдера платформы, по умолчанию `OIDC`. |
 
-Новых переменных модуль не вводит.
+Переменные `OIDC_*` читаются только из окружения сервера, менять их через админ-панель нельзя. Если ни одна не задана, действует обычная настройка по воркспейсам.
 
 Ротация ключа: задайте новый `ENCRYPTION_KEY`, а прежний положите в `FALLBACK_ENCRYPTION_KEY`, затем выполните команду `secret-encryption:rotate`. Секреты OIDC-провайдеров входят в список перешифровываемых. Команда идемпотентна.
 
@@ -54,8 +56,10 @@ TOKEN=$(curl -s $BASE/metadata -H 'Content-Type: application/json' -H "Origin: $
 Список провайдеров (секрет не возвращается):
 
 ```graphql
-query { oidcProviders { id name issuer clientId status } }
+query { oidcProviders { id name issuer clientId status isGlobal } }
 ```
+
+Пока задан провайдер платформы, список состоит из одного элемента с `isGlobal: true`, а создание, изменение и удаление отклоняются кодом `GLOBAL_PROVIDER_ACTIVE`. При неполной настройке `OIDC_*` список пуст и эти операции отклоняются так же.
 
 Создание. Поля: `name` до 255 символов, `issuer` до 2048, `clientId` до 255, `clientSecret` до 2048. Значения не должны быть пустыми.
 
@@ -96,8 +100,9 @@ query { publicOidcProviders(origin: "https://crm.example.com") { name loginUrl }
 
 ## Модель безопасности
 
-- Секрет клиента шифруется в базе версионным ключом, в API и интерфейс не отдаётся.
+- Секрет клиента сохранённого провайдера шифруется в базе версионным ключом, в API и интерфейс не отдаётся. Секрет провайдера платформы лежит только в окружении сервера и никуда не попадает.
 - `state` и `nonce` одноразовые, привязаны к сессии браузера, срок 10 минут.
+- Провайдер платформы входит в воркспейс из `workspaceId` ссылки (без него, с неверным или неизвестным значением вход отклоняется), дальше действуют обычные правила доступа: участник, приглашение, одобренный домен.
 - Вход по ссылке провайдера другого воркспейса отклоняется (провайдер должен принадлежать воркспейсу, на адрес которого пришёл пользователь). Подмена `workspaceInviteHash` на чужой отклоняется.
 - Запросы к IdP идут через защиту от SSRF: адреса во внутренних сетях заблокированы, пока хост явно не разрешён.
 - Email принимается только подтверждённым в IdP.
@@ -139,6 +144,7 @@ query { publicOidcProviders(origin: "https://crm.example.com") { name loginUrl }
 | `ISSUER_DISCOVERY_FAILED` | Could not load the OpenID configuration from the issuer. | IdP недоступен, адрес заблокирован защитой от SSRF, нет discovery, не прошла проверка конфигурации |
 | `PROVIDER_ALREADY_EXISTS` | This identity provider is already configured. | Такая пара Issuer и Client ID уже есть |
 | `PROVIDER_NOT_FOUND` | Identity provider not found. | Неверный `id` при изменении или удалении |
+| `GLOBAL_PROVIDER_ACTIVE` | Single sign-on is configured for the whole platform and cannot be changed here. | Задана хотя бы одна из `OIDC_*`: настройка по воркспейсам отключена |
 
 ## Диагностика
 
@@ -147,7 +153,8 @@ query { publicOidcProviders(origin: "https://crm.example.com") { name loginUrl }
 3. Если IdP во внутренней сети, а создание падает с `ISSUER_DISCOVERY_FAILED`, добавьте его хост в `OUTBOUND_HTTP_ALLOWED_INTERNAL_HOSTS` и перезапустите сервер.
 4. Redirect URI в IdP должен совпадать символ в символ с показанным в диалоге (схема, хост, порт, путь).
 5. Если IdP не отдаёт `email_verified`, вход не заработает, настройте claim в IdP или смените IdP.
+6. Нет кнопки входа, а в логе предупреждение `OIDC_ISSUER, OIDC_CLIENT_ID and OIDC_CLIENT_SECRET must all be set...` или `OIDC_ISSUER is not a valid https URL...`: задана часть переменных `OIDC_*` или Issuer некорректен. Задайте все три (Issuer по `https`) или уберите все, тогда вернётся настройка по воркспейсам.
 
 ## Ограничения
 
-См. [руководство](guide.md#чего-сейчас-нет). Дополнительно: живая проверка выполнялась только на тестовом IdP, второй воркспейс на одном инстансе, регресс входа через Google и Microsoft и реальные IdP из [рецептов](providers.md) не проверялись.
+См. [руководство](guide.md#чего-сейчас-нет). Дополнительно: живая проверка выполнялась только на тестовом IdP (провайдер платформы проверен в двух воркспейсах одного инстанса, провайдеры воркспейсов во втором воркспейсе нет), регресс входа через Google и Microsoft и реальные IdP из [рецептов](providers.md) не проверялись.

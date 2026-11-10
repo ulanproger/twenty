@@ -32,6 +32,7 @@ const buildStoredLogin = (overrides: Record<string, unknown> = {}) => ({
   nonce: 'nonce-1',
   codeVerifier: 'verifier-1',
   providerId: 'provider-1',
+  workspaceId: null,
   workspaceInviteHash: null,
   createdAt: Date.now(),
   ...overrides,
@@ -139,6 +140,7 @@ describe('OidcSsoAuthController', () => {
       controller.login(
         'provider-1',
         workspaceInviteHash,
+        undefined,
         request as never,
         response as never,
       );
@@ -168,6 +170,27 @@ describe('OidcSsoAuthController', () => {
       expect(http.session.save.mock.invocationCallOrder[0]).toBeLessThan(
         http.response.redirect.mock.invocationCallOrder[0],
       );
+    });
+
+    it('forwards the workspace id of the login url and keeps the provider workspace in the session', async () => {
+      const { controller, oidcProviderService } = buildController();
+      const http = buildRequestAndResponse();
+
+      await controller.login(
+        'provider-1',
+        undefined,
+        'workspace-from-url',
+        http.request as never,
+        http.response as never,
+      );
+
+      expect(oidcProviderService.findByIdWithWorkspace).toHaveBeenCalledWith(
+        'provider-1',
+        'workspace-from-url',
+      );
+      expect(http.session.oidcLogins).toEqual([
+        expect.objectContaining({ workspaceId: WORKSPACE.id }),
+      ]);
     });
 
     it('keeps the invite hash of the login, up to the length cap', async () => {
@@ -208,6 +231,7 @@ describe('OidcSsoAuthController', () => {
         await controller.login(
           'provider-1',
           workspaceInviteHash,
+          undefined,
           http.request as never,
           http.response as never,
         );
@@ -296,6 +320,20 @@ describe('OidcSsoAuthController', () => {
       state = 'state-1',
     ) => controller.callback(state, request as never, response as never);
 
+    it('looks the provider up with the workspace stored at login', async () => {
+      const { controller, oidcProviderService } = buildController();
+      const http = buildRequestAndResponse([
+        buildStoredLogin({ workspaceId: 'workspace-a' }),
+      ]);
+
+      await callback(controller, http);
+
+      expect(oidcProviderService.findByIdWithWorkspace).toHaveBeenCalledWith(
+        'provider-1',
+        'workspace-a',
+      );
+    });
+
     it('passes the stored login to the code exchange and redirects to the signed-in url', async () => {
       const claims = {
         email: 'ada@example.com',
@@ -315,6 +353,7 @@ describe('OidcSsoAuthController', () => {
 
       expect(oidcProviderService.findByIdWithWorkspace).toHaveBeenCalledWith(
         'provider-1',
+        undefined,
       );
       expect(oidcProtocolService.exchangeCode).toHaveBeenCalledWith({
         provider: expect.objectContaining({ id: 'provider-1' }),
@@ -491,6 +530,7 @@ describe('OidcSsoAuthController', () => {
 
       expect(oidcProviderService.findByIdWithWorkspace).toHaveBeenCalledWith(
         'provider-1',
+        undefined,
       );
       expect(oidcProtocolService.exchangeCode).not.toHaveBeenCalled();
       expect(getRedirectedFailure(guardRedirectService).error.code).toBe(

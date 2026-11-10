@@ -1,6 +1,6 @@
 # OIDC SSO: administrator guide
 
-Sign in to a Twenty workspace through a corporate OpenID Connect provider (Keycloak, Okta, Auth0, Google and others). Only the Authorization Code flow with PKCE S256 is supported. Providers are configured per workspace and a workspace can have several.
+Sign in to a Twenty workspace through a corporate OpenID Connect provider (Keycloak, Okta, Auth0, Google and others). Only the Authorization Code flow with PKCE S256 is supported. Providers are configured per workspace and a workspace can have several. Alternatively one provider can be set for the whole platform through environment variables ([below](#one-provider-for-the-whole-platform)).
 
 This is the fork's own implementation. The old Enterprise "SSO" block on the security page is hidden unless the instance has a valid Enterprise plan, and has nothing to do with OIDC providers.
 
@@ -53,6 +53,24 @@ Each row in the OIDC card has a menu:
 
 You can add several providers, the sign-in screen shows a button for each. The same Issuer with the same Client ID cannot be added twice.
 
+## One provider for the whole platform
+
+If the instance has one corporate IdP for every workspace, set it in the server environment:
+
+```
+OIDC_ISSUER=https://idp.example.com/auth/v1
+OIDC_CLIENT_ID=twenty
+OIDC_CLIENT_SECRET=...
+OIDC_NAME=Company sign-in   # optional, "OIDC" by default
+```
+
+- One client and one redirect URI in the IdP are enough: `https://<your-address>/auth/oidc-sso/callback`.
+- The provider works only when the issuer, client id and client secret are all set and the issuer is valid (`https` in production). If at least one of the three is set but the setup is incomplete or the issuer is invalid, OIDC sign-in is disabled everywhere: no button, per-workspace setup stays off too, and the log gets a warning. Stored workspace providers do not come back to life. To return to per-workspace setup, remove all three variables.
+- While it is on, the sign-in page of every workspace shows one button named `OIDC_NAME`, and per-workspace setup is switched off: Settings, Security shows it read-only, and create, update and delete are rejected.
+- Providers created earlier in workspaces are not deleted but are not used. Remove the variables and they work again.
+- The provider is available in every workspace of the instance: there is no per-workspace switch (workspaces have no SSO flag). The only check on a workspace is membership, an invitation or an approved email domain. Access rules are the same as before: a new user signs in by invitation only, `email_verified` is required. The secret comes from the environment and never reaches the interface.
+- Changing the environment of the server usually means restarting the container.
+
 ## What is not there yet
 
 - Editing Issuer, Client ID and secret. To change them, delete the provider and create it again. Renaming and switching on or off is possible through the API ([reference](reference.md#graphql-api)).
@@ -64,7 +82,7 @@ You can add several providers, the sign-in screen shows a button for each. The s
 
 ## FAQ
 
-**The sign-in button does not appear.** The provider must be Active and the page must be opened from the address of that workspace.
+**The sign-in button does not appear.** The provider must be Active and the page must be opened from the address of that workspace. If at least one `OIDC_*` variable is set on the server, check that all three are set and the Issuer is valid (see [one provider for the whole platform](#one-provider-for-the-whole-platform)): with an incomplete setup there is no button and the log has a warning.
 
 **Sign-in ends with "Single sign-on authentication failed".** This is a generic text, the reason is in the server log. See [troubleshooting](reference.md#troubleshooting).
 

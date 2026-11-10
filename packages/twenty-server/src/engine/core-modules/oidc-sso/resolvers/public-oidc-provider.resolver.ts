@@ -42,10 +42,14 @@ export class PublicOidcProviderResolver {
       workspace.id,
     );
 
-    return providers.map(({ id, name }) => ({
+    return providers.map(({ id, name, isGlobal }) => ({
       id,
       name,
-      loginUrl: buildOidcLoginUrl(serverUrl, id),
+      loginUrl: buildOidcLoginUrl(
+        serverUrl,
+        id,
+        isGlobal ? workspace.id : undefined,
+      ),
     }));
   }
 

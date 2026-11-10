@@ -11,8 +11,12 @@ import { CreateOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/c
 import { DeleteOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/delete-oidc-provider.input';
 import { OidcProviderDTO } from 'src/engine/core-modules/oidc-sso/dtos/oidc-provider.dto';
 import { UpdateOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/update-oidc-provider.input';
-import { toOidcProviderDTO } from 'src/engine/core-modules/oidc-sso/utils/to-oidc-provider-dto.util';
+import {
+  toOidcGlobalProviderDTO,
+  toOidcProviderDTO,
+} from 'src/engine/core-modules/oidc-sso/utils/to-oidc-provider-dto.util';
 import { OidcSsoGraphqlApiExceptionFilter } from 'src/engine/core-modules/oidc-sso/filters/oidc-sso-graphql-api-exception.filter';
+import { OidcGlobalProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-global-provider.service';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { AuthWorkspace } from 'src/engine/decorators/auth/auth-workspace.decorator';
@@ -44,12 +48,23 @@ import { PermissionsGraphqlApiExceptionFilter } from 'src/engine/permissions/uti
   }),
 )
 export class OidcProviderResolver {
-  constructor(private readonly oidcProviderService: OidcProviderService) {}
+  constructor(
+    private readonly oidcProviderService: OidcProviderService,
+    private readonly oidcGlobalProviderService: OidcGlobalProviderService,
+  ) {}
 
   @Query(() => [OidcProviderDTO])
   async oidcProviders(
     @AuthWorkspace() { id: workspaceId }: WorkspaceEntity,
   ): Promise<OidcProviderDTO[]> {
+    const globalState = this.oidcGlobalProviderService.resolve();
+
+    if (globalState.status !== 'off') {
+      return globalState.status === 'on'
+        ? [toOidcGlobalProviderDTO(globalState.provider)]
+        : [];
+    }
+
     const providers =
       await this.oidcProviderService.findAllByWorkspace(workspaceId);
 

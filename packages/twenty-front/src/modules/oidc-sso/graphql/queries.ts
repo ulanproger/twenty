@@ -8,6 +8,7 @@ export const OIDC_PROVIDERS = gql`
       issuer
       clientId
       status
+      isGlobal
     }
   }
 `;

@@ -64,7 +64,7 @@ check "admin and member logged in" '[ -n "$ADMIN" ] && [ -n "$MEMBER" ]'
 # Schema
 schema=$(gql '' '{"query":"{ o: __type(name:\"OidcProvider\"){fields{name}} p: __type(name:\"PublicOidcProvider\"){fields{name}} m: __type(name:\"Mutation\"){fields{name}} }"}')
 check "OidcProvider type has no secret field" \
-  '[ "$(echo "$schema" | json "sorted(f[\"name\"] for f in d[\"data\"][\"o\"][\"fields\"]) == [\"clientId\", \"createdAt\", \"id\", \"issuer\", \"name\", \"status\", \"updatedAt\"]")" = True ]'
+  '[ "$(echo "$schema" | json "sorted(f[\"name\"] for f in d[\"data\"][\"o\"][\"fields\"]) == [\"clientId\", \"createdAt\", \"id\", \"isGlobal\", \"issuer\", \"name\", \"status\", \"updatedAt\"]")" = True ]'
 check "PublicOidcProvider exposes only id, name, loginUrl" \
   '[ "$(echo "$schema" | json "sorted(f[\"name\"] for f in d[\"data\"][\"p\"][\"fields\"]) == [\"id\", \"loginUrl\", \"name\"]")" = True ]'
 check "legacy SSO mutation still in the schema" \

@@ -19,6 +19,7 @@ export class OidcSsoGraphqlApiExceptionFilter implements ExceptionFilter {
         throw new ConflictError(exception);
       case 'INVALID_ISSUER':
       case 'ISSUER_DISCOVERY_FAILED':
+      case 'GLOBAL_PROVIDER_ACTIVE':
         throw new UserInputError(exception);
       default:
         return assertUnreachable(exception.code);

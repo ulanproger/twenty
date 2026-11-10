@@ -46,6 +46,7 @@ Leave it unset to test the "internal host is blocked" scenario.
 ## Other checks
 
 - `smoke-login.sh` and `smoke-admin-api.sh`: end-to-end against a running server (see the headers of the scripts).
+- `smoke-global-provider.sh`: the platform-wide provider from `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` in two workspaces; start the server in multiworkspace mode with those variables (see the header).
 - The userinfo fallback (id_token without `email`) is covered by unit tests only; the mock IdP smoke does not drive it.
 - `node scripts/fork/oidc-dev/check-client-auth-method.cjs`: confirms how `openid-client` sends the client secret; needs no running server or Docker; rerun after upgrading `openid-client`.
 

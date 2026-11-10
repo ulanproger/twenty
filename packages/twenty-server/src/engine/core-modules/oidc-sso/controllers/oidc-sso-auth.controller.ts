@@ -24,10 +24,10 @@ import {
   OIDC_SSO_CALLBACK_PATH,
   OIDC_SSO_LOGIN_PATH,
 } from 'src/engine/core-modules/oidc-sso/constants/oidc-sso-paths.constant';
-import { type WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
 import { OidcAccountService } from 'src/engine/core-modules/oidc-sso/services/oidc-account.service';
 import { OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
+import { type OidcLoginProvider } from 'src/engine/core-modules/oidc-sso/types/oidc-login-provider.type';
 import { checkOidcProviderAccess } from 'src/engine/core-modules/oidc-sso/utils/check-oidc-provider-access.util';
 import { extractOidcIdentity } from 'src/engine/core-modules/oidc-sso/utils/extract-oidc-identity.util';
 import {
@@ -64,14 +64,17 @@ export class OidcSsoAuthController {
   async login(
     @Param('providerId') providerId: string,
     @Query('workspaceInviteHash') workspaceInviteHash: unknown,
+    @Query('workspaceId') workspaceId: unknown,
     @Req() request: OidcSessionRequest,
     @Res() response: Response,
   ) {
     let workspace: WorkspaceEntity | undefined;
 
     try {
-      const provider =
-        await this.oidcProviderService.findByIdWithWorkspace(providerId);
+      const provider = await this.oidcProviderService.findByIdWithWorkspace(
+        providerId,
+        isString(workspaceId) ? workspaceId : undefined,
+      );
 
       if (provider === null) {
         throw new Error('OIDC provider not found');
@@ -102,6 +105,7 @@ export class OidcSsoAuthController {
           nonce,
           codeVerifier,
           providerId: provider.id,
+          workspaceId: provider.workspaceId,
           workspaceInviteHash: isNonEmptyString(workspaceInviteHash)
             ? workspaceInviteHash
             : null,
@@ -154,6 +158,7 @@ export class OidcSsoAuthController {
 
       const provider = await this.oidcProviderService.findByIdWithWorkspace(
         login.providerId,
+        login.workspaceId ?? undefined,
       );
 
       if (provider === null) {
@@ -193,7 +198,7 @@ export class OidcSsoAuthController {
   // Only the status can fail here. The workspace binding is checked in OidcAccountService
   // against the workspace the sign-in resolves to, which an invite hash may change.
   private assertProviderIsActive(
-    provider: Pick<WorkspaceOidcProviderEntity, 'workspaceId' | 'status'>,
+    provider: Pick<OidcLoginProvider, 'workspaceId' | 'status'>,
   ) {
     const access = checkOidcProviderAccess({
       provider,

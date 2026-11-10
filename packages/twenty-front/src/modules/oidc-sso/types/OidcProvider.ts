@@ -6,6 +6,7 @@ export type OidcProvider = {
   issuer: string;
   clientId: string;
   status: OidcProviderStatus;
+  isGlobal: boolean;
 };
 
 export type PublicOidcProvider = {

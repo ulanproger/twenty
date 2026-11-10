@@ -4,7 +4,7 @@
 
 | Purpose | Address |
 |---|---|
-| Start sign-in | `GET <SERVER_URL>/auth/oidc-sso/login/<providerId>[?workspaceInviteHash=<hash>]` |
+| Start sign-in | `GET <SERVER_URL>/auth/oidc-sso/login/<providerId>[?workspaceInviteHash=<hash>]` (for the platform-wide provider the link also carries `workspaceId=<uuid>`, the public query returns the ready link) |
 | Return from the IdP (redirect URI) | `GET <SERVER_URL>/auth/oidc-sso/callback` |
 | Admin and public API | `POST <SERVER_URL>/metadata` (GraphQL) |
 
@@ -28,8 +28,10 @@
 | `FALLBACK_ENCRYPTION_KEY` | Previous key during rotation (see below). |
 | `OUTBOUND_HTTP_ALLOWED_INTERNAL_HOSTS` | Comma-separated hosts in internal networks that Twenty may call. Needed if the IdP sits in your private network. Such addresses are blocked by default. |
 | `NODE_ENV` | Local development only: `development` allows an `http` Issuer. Do not enable it in production, the Issuer must be `https`. |
+| `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` | One provider for the whole platform, see the [guide](guide.md#one-provider-for-the-whole-platform). All three are required. |
+| `OIDC_NAME` | Text of the sign-in button of the platform-wide provider, `OIDC` by default. |
 
-The module introduces no new variables.
+The `OIDC_*` variables are read only from the server environment and cannot be changed in the admin panel. If none of them is set, the usual per-workspace setup applies.
 
 Key rotation: set the new `ENCRYPTION_KEY`, put the previous one into `FALLBACK_ENCRYPTION_KEY`, then run the `secret-encryption:rotate` command. OIDC provider secrets are part of the re-encrypted set. The command is idempotent.
 
@@ -54,8 +56,10 @@ The snippet breaks on a password containing `"` or `\`: build the JSON with `jq 
 List providers (the secret is not returned):
 
 ```graphql
-query { oidcProviders { id name issuer clientId status } }
+query { oidcProviders { id name issuer clientId status isGlobal } }
 ```
+
+While the platform-wide provider is set, the list has one item with `isGlobal: true`, and create, update and delete are rejected with `GLOBAL_PROVIDER_ACTIVE`. With an incomplete `OIDC_*` setup the list is empty and those operations are rejected the same way.
 
 Create. Fields: `name` up to 255 characters, `issuer` up to 2048, `clientId` up to 255, `clientSecret` up to 2048. Values must not be empty.
 
@@ -96,8 +100,9 @@ query { publicOidcProviders(origin: "https://crm.example.com") { name loginUrl }
 
 ## Security model
 
-- The client secret is encrypted in the database with a versioned key and is never returned by the API or UI.
+- The client secret of a stored provider is encrypted in the database with a versioned key and is never returned by the API or UI. The secret of the platform-wide provider lives only in the server environment and goes nowhere else.
 - `state` and `nonce` are single-use, bound to the browser session, valid for 10 minutes.
+- The platform-wide provider signs the user into the workspace named by the `workspaceId` of the link (a missing, malformed or unknown value is rejected), after that the usual access rules apply: membership, an invitation, an approved domain.
 - Signing in through a provider of another workspace is rejected (the provider must belong to the workspace whose address the user came to). Substituting a foreign `workspaceInviteHash` is rejected.
 - Requests to the IdP go through SSRF protection: addresses in internal networks are blocked until the host is explicitly allowed.
 - The email is accepted only when the IdP marks it verified.
@@ -139,6 +144,7 @@ Errors when creating a provider in the UI and API:
 | `ISSUER_DISCOVERY_FAILED` | Could not load the OpenID configuration from the issuer. | IdP unreachable, address blocked by SSRF protection, no discovery, configuration validation failed |
 | `PROVIDER_ALREADY_EXISTS` | This identity provider is already configured. | This Issuer and Client ID pair already exists |
 | `PROVIDER_NOT_FOUND` | Identity provider not found. | Wrong `id` on update or delete |
+| `GLOBAL_PROVIDER_ACTIVE` | Single sign-on is configured for the whole platform and cannot be changed here. | At least one `OIDC_*` variable is set: per-workspace setup is switched off |
 
 ## Troubleshooting
 
@@ -147,7 +153,8 @@ Errors when creating a provider in the UI and API:
 3. If the IdP is in an internal network and creation fails with `ISSUER_DISCOVERY_FAILED`, add its host to `OUTBOUND_HTTP_ALLOWED_INTERNAL_HOSTS` and restart the server.
 4. The redirect URI in the IdP must match the one shown in the dialog character for character (scheme, host, port, path).
 5. If the IdP does not return `email_verified`, sign-in will not work: configure the claim in the IdP or change the IdP.
+6. No sign-in button and a log warning `OIDC_ISSUER, OIDC_CLIENT_ID and OIDC_CLIENT_SECRET must all be set...` or `OIDC_ISSUER is not a valid https URL...`: only some of the `OIDC_*` variables are set or the Issuer is invalid. Set all three (Issuer over `https`) or remove all of them, then per-workspace setup returns.
 
 ## Limitations
 
-See the [guide](guide.md#what-is-not-there-yet). Also: live testing was done only against a test IdP; a second workspace on one instance, regression of Google and Microsoft sign-in and the real IdPs from the [recipes](providers.md) were not tested.
+See the [guide](guide.md#what-is-not-there-yet). Also: live testing was done only against a test IdP (the platform-wide provider was checked in two workspaces of one instance, workspace providers were not checked in the second workspace); regression of Google and Microsoft sign-in and the real IdPs from the [recipes](providers.md) were not tested.

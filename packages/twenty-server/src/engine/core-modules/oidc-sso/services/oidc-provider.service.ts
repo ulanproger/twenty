@@ -6,7 +6,9 @@ import { Repository } from 'typeorm';
 
 import { WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
 import { OidcSsoException } from 'src/engine/core-modules/oidc-sso/oidc-sso.exception';
+import { OidcGlobalProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-global-provider.service';
 import { OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
+import { type OidcLoginProvider } from 'src/engine/core-modules/oidc-sso/types/oidc-login-provider.type';
 import { isOidcIssuerSchemeAllowed } from 'src/engine/core-modules/oidc-sso/utils/is-oidc-issuer-scheme-allowed.util';
 import { normalizeOidcIssuer } from 'src/engine/core-modules/oidc-sso/utils/normalize-oidc-issuer.util';
 import { type PlaintextString } from 'src/engine/core-modules/secret-encryption/branded-strings/plaintext-string.type';
@@ -26,18 +28,46 @@ export class OidcProviderService {
     private readonly secretEncryptionService: SecretEncryptionService,
     private readonly oidcProtocolService: OidcProtocolService,
     private readonly twentyConfigService: TwentyConfigService,
+    private readonly oidcGlobalProviderService: OidcGlobalProviderService,
   ) {}
 
-  async findByIdWithWorkspace(providerId: string) {
+  // workspaceId matters only for the global provider, which has no workspace of its own.
+  async findByIdWithWorkspace(
+    providerId: string,
+    workspaceId?: string,
+  ): Promise<OidcLoginProvider | null> {
+    const globalState = this.oidcGlobalProviderService.resolve();
+
+    if (globalState.status !== 'off') {
+      return globalState.status === 'on' &&
+        providerId === globalState.provider.id
+        ? await this.oidcGlobalProviderService.findLoginProvider(
+            globalState.provider,
+            workspaceId,
+          )
+        : null;
+    }
+
     // A malformed id would make Postgres throw instead of returning no row.
     if (!isValidUuid(providerId)) {
       return null;
     }
 
-    return await this.oidcProviderRepository.findOne({
+    const provider = await this.oidcProviderRepository.findOne({
       where: { id: providerId },
       relations: { workspace: true },
     });
+
+    return provider === null ? null : { ...provider, isGlobal: false };
+  }
+
+  private assertNoGlobalProvider() {
+    if (this.oidcGlobalProviderService.resolve().status !== 'off') {
+      throw new OidcSsoException(
+        'OIDC is configured for the whole platform',
+        'GLOBAL_PROVIDER_ACTIVE',
+      );
+    }
   }
 
   async findAllByWorkspace(workspaceId: string) {
@@ -47,16 +77,44 @@ export class OidcProviderService {
     });
   }
 
-  async findActiveByWorkspace(workspaceId: string) {
-    return await this.oidcProviderRepository.find({
+  // Only what the sign-in screen needs: the global provider's secret never leaves its service.
+  async findActiveByWorkspace(
+    workspaceId: string,
+  ): Promise<{ id: string; name: string; isGlobal: boolean }[]> {
+    const globalState = this.oidcGlobalProviderService.resolve();
+
+    if (globalState.status !== 'off') {
+      return globalState.status === 'on'
+        ? [
+            {
+              id: globalState.provider.id,
+              name: globalState.provider.name,
+              isGlobal: true,
+            },
+          ]
+        : [];
+    }
+
+    const providers = await this.oidcProviderRepository.find({
       where: { workspaceId, status: 'active' },
       order: { createdAt: 'ASC' },
     });
+
+    return providers.map(({ id, name }) => ({ id, name, isGlobal: false }));
   }
 
-  decryptClientSecret(
-    provider: Pick<WorkspaceOidcProviderEntity, 'clientSecret' | 'workspaceId'>,
-  ): string {
+  // The global provider's secret comes from the environment, stored ones are encrypted per workspace.
+  decryptClientSecret(provider: OidcLoginProvider): string {
+    if (provider.isGlobal) {
+      const globalState = this.oidcGlobalProviderService.resolve();
+
+      if (globalState.status !== 'on') {
+        throw new Error('Global OIDC provider is not configured');
+      }
+
+      return globalState.provider.clientSecret;
+    }
+
     return this.secretEncryptionService.decryptVersionedOrThrow(
       provider.clientSecret,
       { workspaceId: provider.workspaceId },
@@ -76,6 +134,8 @@ export class OidcProviderService {
     clientId: string;
     clientSecret: string;
   }) {
+    this.assertNoGlobalProvider();
+
     const normalizedIssuer = normalizeOidcIssuer(issuer);
 
     if (normalizedIssuer === null) {
@@ -134,6 +194,8 @@ export class OidcProviderService {
     name?: string;
     status?: WorkspaceOidcProviderEntity['status'];
   }) {
+    this.assertNoGlobalProvider();
+
     const provider = await this.oidcProviderRepository.findOne({
       where: { id, workspaceId },
     });
@@ -157,6 +219,8 @@ export class OidcProviderService {
   }
 
   async delete({ workspaceId, id }: { workspaceId: string; id: string }) {
+    this.assertNoGlobalProvider();
+
     const { affected } = await this.oidcProviderRepository.delete({
       id,
       workspaceId,

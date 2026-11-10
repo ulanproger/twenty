@@ -26,6 +26,7 @@ const provider = {
   issuer: 'https://idp.example.com',
   clientId: 'twenty',
   status: 'active',
+  isGlobal: false,
 };
 
 const listMock = (oidcProviders: unknown[]): MockedResponse => ({
@@ -147,4 +148,15 @@ it('deletes a provider only after the confirmation', async () => {
   await userEvent.click(confirm[confirm.length - 1]);
 
   await waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));
+});
+
+it('shows a platform-wide provider read-only', async () => {
+  renderSection([listMock([{ ...provider, name: 'Rauthy', isGlobal: true }])]);
+
+  expect(await screen.findByText('Rauthy')).toBeVisible();
+  expect(screen.getByText('Active')).toBeVisible();
+  expect(
+    screen.queryByRole('button', { name: /Add OIDC provider/ }),
+  ).toBeNull();
+  expect(screen.queryByLabelText('More options')).toBeNull();
 });
