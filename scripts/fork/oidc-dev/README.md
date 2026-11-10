@@ -65,4 +65,4 @@ bash scripts/fork/check-oidc-seams.sh    # run before every commit and after eve
 gh workflow run fork-build-ghcr-image.yaml --ref main
 ```
 
-Builds `ghcr.io/<owner>/twenty` for linux/amd64 and linux/arm64 from the chosen ref and tags it `<TWENTY_CURRENT_VERSION>-<first 10 chars of the commit>` (for example `2.58.0-fff9c08344`) plus a floating `<TWENTY_CURRENT_VERSION>` tag on the latest build of that version. Older `sha-*` tags are left as they are. `APP_VERSION` comes from `TWENTY_CURRENT_VERSION`. The run summary prints the `docker pull` line.
+Builds `ghcr.io/<owner>/twenty` for linux/amd64 and linux/arm64 from the chosen ref and tags it `<TWENTY_CURRENT_VERSION>-<first 10 chars of the commit>` (for example `2.58.0-fff9c08344`) plus a floating `<TWENTY_CURRENT_VERSION>` tag that the workflow moves only on runs from `main` (a local multi-platform `--push` moves it too). New builds no longer get `sha-*` tags, so a deployment pinned to one stays on its old image until the pin is changed. `APP_VERSION` comes from `TWENTY_CURRENT_VERSION`. The run summary prints the `docker pull` line.

@@ -80,7 +80,9 @@ jobs:
         run: |
           tag="${{ needs.build.outputs.version }}-${GITHUB_SHA::10}"
           echo "TAG=$tag" >> "$GITHUB_ENV"
-          printf "$IMAGE@sha256:%s\0" * | xargs -0 docker buildx imagetools create -t "$IMAGE:$tag" -t "$IMAGE:${{ needs.build.outputs.version }}"
+          tags=(-t "$IMAGE:$tag")
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then tags+=(-t "$IMAGE:${{ needs.build.outputs.version }}"); fi
+          printf "$IMAGE@sha256:%s\0" * | xargs -0 docker buildx imagetools create "${tags[@]}"
       - run: |
           docker buildx imagetools inspect "$IMAGE:$TAG"
           echo "docker pull $IMAGE:$TAG" >> "$GITHUB_STEP_SUMMARY"

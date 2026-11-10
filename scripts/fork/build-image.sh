@@ -134,6 +134,7 @@ branch="$(git rev-parse --abbrev-ref HEAD)"
 echo "commit:     $SHA10 ($branch)"
 echo "version:    $VERSION"
 echo "image:      $IMAGE:$TAG"
+[ -z "$FLOATING_TAG" ] || [ "$push" = "0" ] || echo "floating:   $IMAGE:$FLOATING_TAG (moved by --push)"
 echo "platforms:  $PLATFORMS"
 
 free_disk_gb() {
