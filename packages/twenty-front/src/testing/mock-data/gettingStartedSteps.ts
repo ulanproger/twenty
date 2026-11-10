@@ -10,10 +10,10 @@ export const mockGettingStartedStepDefinitions: GettingStartedProgressQuery['get
       __typename: 'GettingStartedStepDefinition',
       actionKey: GettingStartedStepActionKey.CONNECT_MAILBOX,
       kind: GettingStartedStepKind.CUSTOM,
-      title: 'Connect your mailbox',
+      title: 'Import your contacts',
       doneTitle: 'Mailbox connected',
       description:
-        'Companies and people fill in from your emails and meetings.',
+        'Connect your email and calendar to see your entire network instantly. Takes only 30 seconds.',
       doneDescription:
         'Companies and people fill in from your emails and meetings.',
       icon: 'IconAt',
@@ -21,7 +21,6 @@ export const mockGettingStartedStepDefinitions: GettingStartedProgressQuery['get
       promptLabel: null,
       prompt: null,
       doneChatThreadId: null,
-      doneWorkflowId: null,
     },
     {
       __typename: 'GettingStartedStepDefinition',
@@ -37,7 +36,6 @@ export const mockGettingStartedStepDefinitions: GettingStartedProgressQuery['get
       promptLabel: null,
       prompt: null,
       doneChatThreadId: null,
-      doneWorkflowId: null,
     },
     {
       __typename: 'GettingStartedStepDefinition',
@@ -52,7 +50,6 @@ export const mockGettingStartedStepDefinitions: GettingStartedProgressQuery['get
       promptLabel: null,
       prompt: null,
       doneChatThreadId: null,
-      doneWorkflowId: null,
     },
     {
       __typename: 'GettingStartedStepDefinition',
@@ -67,7 +64,6 @@ export const mockGettingStartedStepDefinitions: GettingStartedProgressQuery['get
       promptLabel: null,
       prompt: null,
       doneChatThreadId: null,
-      doneWorkflowId: null,
     },
     {
       __typename: 'GettingStartedStepDefinition',
@@ -83,7 +79,6 @@ export const mockGettingStartedStepDefinitions: GettingStartedProgressQuery['get
       promptLabel: null,
       prompt: null,
       doneChatThreadId: null,
-      doneWorkflowId: null,
     },
     {
       __typename: 'GettingStartedStepDefinition',
@@ -100,7 +95,6 @@ export const mockGettingStartedStepDefinitions: GettingStartedProgressQuery['get
       prompt:
         'Every Monday, draft a follow-up email for each deal closing in the next 30 days.',
       doneChatThreadId: null,
-      doneWorkflowId: null,
     },
   ];
 
