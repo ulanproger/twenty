@@ -1,9 +1,8 @@
-import { Logger } from '@nestjs/common';
-
 import { QueryFailedError } from 'typeorm';
 
 import { OIDC_GLOBAL_PROVIDER_ID } from 'src/engine/core-modules/oidc-sso/constants/oidc-global-provider-id.constant';
 import { OidcSsoException } from 'src/engine/core-modules/oidc-sso/oidc-sso.exception';
+import { OidcGlobalProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-global-provider.service';
 import { type OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { type SecretEncryptionService } from 'src/engine/core-modules/secret-encryption/secret-encryption.service';
@@ -80,6 +79,11 @@ const buildService = ({
     ),
   };
 
+  const globalProviderService = new OidcGlobalProviderService(
+    config as unknown as TwentyConfigService,
+    workspaceRepository as never,
+  );
+
   return {
     repository,
     protocol,
@@ -88,7 +92,7 @@ const buildService = ({
       encryption as unknown as SecretEncryptionService,
       protocol as unknown as OidcProtocolService,
       config as unknown as TwentyConfigService,
-      workspaceRepository as never,
+      globalProviderService,
     ),
     workspaceRepository,
     config,
@@ -330,14 +334,15 @@ describe('OidcProviderService', () => {
       expect(repository.findOne).not.toHaveBeenCalled();
     });
 
-    it('returns the plaintext secret from env', () => {
+    it('returns the plaintext secret from env for the global provider', () => {
       const { service } = buildService({ globalEnv });
 
       expect(
         service.decryptClientSecret({
           id: OIDC_GLOBAL_PROVIDER_ID,
           workspaceId: WORKSPACE_ID,
-        }),
+          isGlobal: true,
+        } as never),
       ).toBe('global-secret');
     });
   });
@@ -357,44 +362,14 @@ describe('OidcProviderService', () => {
       });
     });
 
-    it('warns once per kind of misconfiguration and again after it was fixed', () => {
-      const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-      const { service, config } = buildService({
-        globalEnv: { OIDC_ISSUER: globalEnv.OIDC_ISSUER },
+    it('marks a stored provider as not global', async () => {
+      const { service } = buildService({
+        stored: { id: 'p1', workspaceId: 'workspace-a', clientSecret: 'enc' },
       });
 
-      service.getGlobalProvider();
-      service.getGlobalProvider();
-      expect(warn).toHaveBeenCalledTimes(1);
-      expect(warn).toHaveBeenLastCalledWith(
-        expect.stringContaining('must all be set'),
-      );
-
-      config.get.mockImplementation((key: string) => globalEnv[key]);
-      expect(service.getGlobalProvider()).not.toBeNull();
-
-      config.get.mockImplementation(
-        (key: string) => ({ ...globalEnv, OIDC_ISSUER: 'not a url' })[key],
-      );
-      service.getGlobalProvider();
-      expect(warn).toHaveBeenCalledTimes(2);
-      expect(warn).toHaveBeenLastCalledWith(
-        expect.stringContaining('not a valid https URL'),
-      );
-
-      warn.mockRestore();
-    });
-
-    it('stays off with only part of the variables or a bad issuer', () => {
-      const { service: partial } = buildService({
-        globalEnv: { OIDC_ISSUER: globalEnv.OIDC_ISSUER },
-      });
-      const { service: badIssuer } = buildService({
-        globalEnv: { ...globalEnv, OIDC_ISSUER: 'http://idp.example.com' },
-      });
-
-      expect(partial.getGlobalProvider()).toBeNull();
-      expect(badIssuer.getGlobalProvider()).toBeNull();
+      await expect(
+        service.findByIdWithWorkspace('9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'),
+      ).resolves.toMatchObject({ id: 'p1', isGlobal: false });
     });
   });
 });

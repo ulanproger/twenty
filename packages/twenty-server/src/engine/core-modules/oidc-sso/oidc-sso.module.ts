@@ -10,6 +10,7 @@ import { CreateWorkspaceOidcProviderFastInstanceCommand } from 'src/engine/core-
 import { OidcProviderResolver } from 'src/engine/core-modules/oidc-sso/resolvers/oidc-provider.resolver';
 import { PublicOidcProviderResolver } from 'src/engine/core-modules/oidc-sso/resolvers/public-oidc-provider.resolver';
 import { OidcAccountService } from 'src/engine/core-modules/oidc-sso/services/oidc-account.service';
+import { OidcGlobalProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-global-provider.service';
 import { OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { SecretEncryptionModule } from 'src/engine/core-modules/secret-encryption/secret-encryption.module';
@@ -31,6 +32,7 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
   providers: [
     CreateWorkspaceOidcProviderFastInstanceCommand,
     OidcProviderService,
+    OidcGlobalProviderService,
     OidcProtocolService,
     OidcAccountService,
     OidcProviderResolver,

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import {
@@ -8,9 +8,9 @@ import {
 } from 'twenty-shared/utils';
 import { Repository } from 'typeorm';
 
-import { OIDC_GLOBAL_PROVIDER_ID } from 'src/engine/core-modules/oidc-sso/constants/oidc-global-provider-id.constant';
 import { WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
 import { OidcSsoException } from 'src/engine/core-modules/oidc-sso/oidc-sso.exception';
+import { OidcGlobalProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-global-provider.service';
 import { OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
 import { isOidcIssuerSchemeAllowed } from 'src/engine/core-modules/oidc-sso/utils/is-oidc-issuer-scheme-allowed.util';
 import { normalizeOidcIssuer } from 'src/engine/core-modules/oidc-sso/utils/normalize-oidc-issuer.util';
@@ -19,18 +19,10 @@ import { SecretEncryptionService } from 'src/engine/core-modules/secret-encrypti
 import { NodeEnvironment } from 'src/engine/core-modules/twenty-config/interfaces/node-environment.interface';
 import { TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 import { type OidcLoginProvider } from 'src/engine/core-modules/oidc-sso/types/oidc-login-provider.type';
-import {
-  type OidcGlobalProvider,
-  readOidcGlobalProvider,
-} from 'src/engine/core-modules/oidc-sso/utils/read-oidc-global-provider.util';
-import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { isUniqueViolationError } from 'src/engine/metadata-modules/ai/ai-chat/utils/is-unique-violation-error.util';
 
 @Injectable()
 export class OidcProviderService {
-  private readonly logger = new Logger(OidcProviderService.name);
-  private lastWarnedGlobalStatus: 'incomplete' | 'invalid-issuer' | null = null;
-
   constructor(
     // The public login and callback routes know only the provider id, so every
     // admin query below scopes by workspaceId by hand.
@@ -40,57 +32,19 @@ export class OidcProviderService {
     private readonly secretEncryptionService: SecretEncryptionService,
     private readonly oidcProtocolService: OidcProtocolService,
     private readonly twentyConfigService: TwentyConfigService,
-    @InjectRepository(WorkspaceEntity)
-    private readonly workspaceRepository: Repository<WorkspaceEntity>,
+    private readonly oidcGlobalProviderService: OidcGlobalProviderService,
   ) {}
-
-  // The platform-wide provider from env. While it is on, stored providers are ignored.
-  getGlobalProvider() {
-    const result = readOidcGlobalProvider({
-      issuer: this.twentyConfigService.get('OIDC_ISSUER'),
-      clientId: this.twentyConfigService.get('OIDC_CLIENT_ID'),
-      clientSecret: this.twentyConfigService.get('OIDC_CLIENT_SECRET'),
-      name: this.twentyConfigService.get('OIDC_NAME'),
-      isDevelopment:
-        this.twentyConfigService.get('NODE_ENV') ===
-        NodeEnvironment.DEVELOPMENT,
-    });
-
-    // Warns once per kind of misconfiguration and re-arms after a good or an empty setup.
-    const problem =
-      result.status === 'incomplete' || result.status === 'invalid-issuer'
-        ? result.status
-        : null;
-
-    if (problem !== this.lastWarnedGlobalStatus) {
-      this.lastWarnedGlobalStatus = problem;
-
-      if (problem === 'incomplete') {
-        this.logger.warn(
-          'OIDC_ISSUER, OIDC_CLIENT_ID and OIDC_CLIENT_SECRET must all be set, the global OIDC provider stays off',
-        );
-      }
-
-      if (problem === 'invalid-issuer') {
-        this.logger.warn(
-          'OIDC_ISSUER is not a valid https URL, the global OIDC provider stays off',
-        );
-      }
-    }
-
-    return result.status === 'on' ? result.provider : null;
-  }
 
   // workspaceId matters only for the global provider, which has no workspace of its own.
   async findByIdWithWorkspace(
     providerId: string,
     workspaceId?: string,
   ): Promise<OidcLoginProvider | null> {
-    const globalProvider = this.getGlobalProvider();
+    const globalProvider = this.oidcGlobalProviderService.get();
 
     if (globalProvider !== null) {
       return providerId === globalProvider.id
-        ? await this.buildGlobalLoginProvider(globalProvider, workspaceId)
+        ? await this.oidcGlobalProviderService.findLoginProvider(workspaceId)
         : null;
     }
 
@@ -99,40 +53,16 @@ export class OidcProviderService {
       return null;
     }
 
-    return await this.oidcProviderRepository.findOne({
+    const provider = await this.oidcProviderRepository.findOne({
       where: { id: providerId },
       relations: { workspace: true },
     });
-  }
 
-  private async buildGlobalLoginProvider(
-    globalProvider: OidcGlobalProvider,
-    workspaceId: string | undefined,
-  ): Promise<OidcLoginProvider | null> {
-    if (!isDefined(workspaceId) || !isValidUuid(workspaceId)) {
-      return null;
-    }
-
-    const workspace = await this.workspaceRepository.findOne({
-      where: { id: workspaceId },
-    });
-
-    if (workspace === null) {
-      return null;
-    }
-
-    return {
-      id: globalProvider.id,
-      workspaceId: workspace.id,
-      status: 'active',
-      issuer: globalProvider.issuer,
-      clientId: globalProvider.clientId,
-      workspace,
-    };
+    return provider === null ? null : { ...provider, isGlobal: false };
   }
 
   private assertNoGlobalProvider() {
-    if (this.getGlobalProvider() !== null) {
+    if (this.oidcGlobalProviderService.get() !== null) {
       throw new OidcSsoException(
         'OIDC is configured for the whole platform',
         'GLOBAL_PROVIDER_ACTIVE',
@@ -147,11 +77,11 @@ export class OidcProviderService {
     });
   }
 
-  // Only what the sign-in screen needs: the global provider's secret never leaves the service.
+  // Only what the sign-in screen needs: the global provider's secret never leaves its service.
   async findActiveByWorkspace(
     workspaceId: string,
   ): Promise<{ id: string; name: string; isGlobal: boolean }[]> {
-    const globalProvider = this.getGlobalProvider();
+    const globalProvider = this.oidcGlobalProviderService.get();
 
     if (globalProvider !== null) {
       return [
@@ -168,11 +98,9 @@ export class OidcProviderService {
   }
 
   // Returns the plaintext secret of either kind of provider.
-  decryptClientSecret(
-    provider: Pick<OidcLoginProvider, 'id' | 'clientSecret' | 'workspaceId'>,
-  ): string {
-    if (provider.id === OIDC_GLOBAL_PROVIDER_ID) {
-      const globalProvider = this.getGlobalProvider();
+  decryptClientSecret(provider: OidcLoginProvider): string {
+    if (provider.isGlobal) {
+      const globalProvider = this.oidcGlobalProviderService.get();
 
       assertIsDefinedOrThrow(
         globalProvider,
@@ -181,11 +109,6 @@ export class OidcProviderService {
 
       return globalProvider.clientSecret;
     }
-
-    assertIsDefinedOrThrow(
-      provider.clientSecret,
-      new Error('OIDC provider has no stored client secret'),
-    );
 
     return this.secretEncryptionService.decryptVersionedOrThrow(
       provider.clientSecret,

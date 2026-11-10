@@ -52,7 +52,7 @@ Last sync (2026-11-05, details in section 9 of `docs/oidc-sso-roadmap.md`): upst
 
 ## Global provider
 
-When `OIDC_ISSUER`, `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` are all set (and the issuer is a valid https URL), one provider from env serves every workspace and per-workspace setup is switched off: create, update and delete fail with `GLOBAL_PROVIDER_ACTIVE`, stored providers are ignored (not deleted). The provider has a fixed id (`OIDC_GLOBAL_PROVIDER_ID`) and no workspace of its own, so its login URL carries `?workspaceId=` and the controller keeps it in the session login; for stored providers that parameter is ignored. `OidcProviderService.getGlobalProvider()` is the single place that reads the env.
+When `OIDC_ISSUER`, `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` are all set (and the issuer is a valid https URL), one provider from env serves every workspace and per-workspace setup is switched off: create, update and delete fail with `GLOBAL_PROVIDER_ACTIVE`, stored providers are ignored (not deleted). The provider has a fixed id (`OIDC_GLOBAL_PROVIDER_ID`) and no workspace of its own, so its login URL carries `?workspaceId=` and the controller keeps it in the session login; for stored providers that parameter is ignored. `OidcGlobalProviderService.get()` is the single place that reads the env; `OidcProviderService` stays the stored-provider service and only dispatches to it.
 
 ## Database
 
