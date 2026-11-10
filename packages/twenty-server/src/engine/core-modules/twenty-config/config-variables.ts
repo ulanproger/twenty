@@ -2689,7 +2689,7 @@ export class ConfigVariables {
   @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.SERVER_CONFIG,
     description:
-      'Issuer URL of the platform-wide OIDC provider (fork). With the client id and secret it replaces per-workspace OIDC setup',
+      'Issuer URL of the platform-wide OIDC provider. With the client id and secret it replaces per-workspace OIDC setup',
     type: ConfigVariableType.STRING,
   })
   @IsOptional()
@@ -2697,7 +2697,7 @@ export class ConfigVariables {
 
   @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.SERVER_CONFIG,
-    description: 'Client ID of the platform-wide OIDC provider (fork)',
+    description: 'Client ID of the platform-wide OIDC provider',
     type: ConfigVariableType.STRING,
   })
   @IsOptional()
@@ -2706,7 +2706,7 @@ export class ConfigVariables {
   @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.SERVER_CONFIG,
     isSensitive: true,
-    description: 'Client secret of the platform-wide OIDC provider (fork)',
+    description: 'Client secret of the platform-wide OIDC provider',
     type: ConfigVariableType.STRING,
   })
   @IsOptional()
@@ -2715,7 +2715,7 @@ export class ConfigVariables {
   @ConfigVariablesMetadata({
     group: ConfigVariablesGroup.SERVER_CONFIG,
     description:
-      'Text of the sign-in button of the platform-wide OIDC provider (fork), "OIDC" by default',
+      'Text of the sign-in button of the platform-wide OIDC provider, "OIDC" by default',
     type: ConfigVariableType.STRING,
   })
   @IsOptional()

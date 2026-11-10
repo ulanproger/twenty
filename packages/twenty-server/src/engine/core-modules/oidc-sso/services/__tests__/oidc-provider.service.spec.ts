@@ -240,6 +240,18 @@ describe('OidcProviderService', () => {
         }),
       );
     });
+
+    it('returns only id, name and a false global flag for stored providers', async () => {
+      const { service, repository } = buildService();
+
+      repository.find.mockResolvedValue([
+        { id: 'p1', name: 'Okta', clientSecret: 'enc:v2:secret' },
+      ]);
+
+      await expect(
+        service.findActiveByWorkspace('workspace-a'),
+      ).resolves.toEqual([{ id: 'p1', name: 'Okta', isGlobal: false }]);
+    });
   });
 
   describe('with a global provider', () => {
@@ -249,10 +261,7 @@ describe('OidcProviderService', () => {
       await expect(
         service.findActiveByWorkspace('workspace-a'),
       ).resolves.toEqual([
-        expect.objectContaining({
-          id: OIDC_GLOBAL_PROVIDER_ID,
-          name: 'Rauthy',
-        }),
+        { id: OIDC_GLOBAL_PROVIDER_ID, name: 'Rauthy', isGlobal: true },
       ]);
       expect(repository.find).not.toHaveBeenCalled();
     });

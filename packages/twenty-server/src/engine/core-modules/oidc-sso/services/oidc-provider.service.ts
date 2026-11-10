@@ -147,19 +147,24 @@ export class OidcProviderService {
     });
   }
 
+  // Only what the sign-in screen needs: the global provider's secret never leaves the service.
   async findActiveByWorkspace(
     workspaceId: string,
-  ): Promise<Pick<WorkspaceOidcProviderEntity, 'id' | 'name'>[]> {
+  ): Promise<{ id: string; name: string; isGlobal: boolean }[]> {
     const globalProvider = this.getGlobalProvider();
 
     if (globalProvider !== null) {
-      return [globalProvider];
+      return [
+        { id: globalProvider.id, name: globalProvider.name, isGlobal: true },
+      ];
     }
 
-    return await this.oidcProviderRepository.find({
+    const providers = await this.oidcProviderRepository.find({
       where: { workspaceId, status: 'active' },
       order: { createdAt: 'ASC' },
     });
+
+    return providers.map(({ id, name }) => ({ id, name, isGlobal: false }));
   }
 
   // Returns the plaintext secret of either kind of provider.
