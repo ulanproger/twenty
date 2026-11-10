@@ -40,6 +40,10 @@ const buildService = ({
 };
 
 describe('OidcGlobalProviderService', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('resolve', () => {
     it('returns the provider when everything is set', () => {
       expect(buildService().service.resolve()).toMatchObject({
@@ -95,8 +99,6 @@ describe('OidcGlobalProviderService', () => {
       expect(warn).toHaveBeenLastCalledWith(
         expect.stringContaining('not a valid https URL'),
       );
-
-      warn.mockRestore();
     });
 
     it('does not warn when nothing is configured', () => {
@@ -105,7 +107,6 @@ describe('OidcGlobalProviderService', () => {
       buildService({ env: {} }).service.resolve();
 
       expect(warn).not.toHaveBeenCalled();
-      warn.mockRestore();
     });
   });
 

@@ -3,6 +3,10 @@
 #
 #   bash scripts/fork/oidc-dev/smoke-global-provider.sh
 #
+# Overridable: SERVER_URL, IDP_URL, ORIGIN_A, ORIGIN_B, EMAIL_A, EMAIL_B. EMAIL_A must belong to
+# workspace A only, EMAIL_B to workspace B. The admin side (read-only card, GLOBAL_PROVIDER_ACTIVE)
+# needs a password login, which multiworkspace mode refuses, so it is not covered here.
+#
 # Needs the dev seed (workspaces apple and yc), the mock IdP from docker-compose.yml and a server started
 # with IS_MULTIWORKSPACE_ENABLED=true, NODE_ENV=development, OUTBOUND_HTTP_ALLOWED_INTERNAL_HOSTS=localhost
 # and OIDC_ISSUER=http://localhost:8085/idp-a, OIDC_CLIENT_ID=twenty, OIDC_CLIENT_SECRET=secret.
@@ -13,7 +17,6 @@ IDP_URL=${IDP_URL:-http://localhost:8085/idp-a}
 ORIGIN_A=${ORIGIN_A:-http://apple.localhost:3001}
 ORIGIN_B=${ORIGIN_B:-http://yc.localhost:3001}
 EMAIL_A=${EMAIL_A:-aaron.munoz185@apple.dev}
-# EMAIL_A must be a member of workspace A only, EMAIL_B a member of workspace B.
 EMAIL_B=${EMAIL_B:-jane.austen@apple.dev}
 # Same value as OIDC_GLOBAL_PROVIDER_ID in oidc-sso/constants/oidc-global-provider-id.constant.ts
 GLOBAL_ID=00000000-0000-4000-8000-000000000001

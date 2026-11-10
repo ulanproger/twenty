@@ -36,12 +36,13 @@ export class OidcProviderService {
     providerId: string,
     workspaceId?: string,
   ): Promise<OidcLoginProvider | null> {
-    const global = this.oidcGlobalProviderService.resolve();
+    const globalState = this.oidcGlobalProviderService.resolve();
 
-    if (global.status !== 'off') {
-      return global.status === 'on' && providerId === global.provider.id
+    if (globalState.status !== 'off') {
+      return globalState.status === 'on' &&
+        providerId === globalState.provider.id
         ? await this.oidcGlobalProviderService.findLoginProvider(
-            global.provider,
+            globalState.provider,
             workspaceId,
           )
         : null;
@@ -80,14 +81,14 @@ export class OidcProviderService {
   async findActiveByWorkspace(
     workspaceId: string,
   ): Promise<{ id: string; name: string; isGlobal: boolean }[]> {
-    const global = this.oidcGlobalProviderService.resolve();
+    const globalState = this.oidcGlobalProviderService.resolve();
 
-    if (global.status !== 'off') {
-      return global.status === 'on'
+    if (globalState.status !== 'off') {
+      return globalState.status === 'on'
         ? [
             {
-              id: global.provider.id,
-              name: global.provider.name,
+              id: globalState.provider.id,
+              name: globalState.provider.name,
               isGlobal: true,
             },
           ]
@@ -102,16 +103,16 @@ export class OidcProviderService {
     return providers.map(({ id, name }) => ({ id, name, isGlobal: false }));
   }
 
-  // Returns the plaintext secret of either kind of provider.
+  // The global provider's secret comes from the environment, stored ones are encrypted per workspace.
   decryptClientSecret(provider: OidcLoginProvider): string {
     if (provider.isGlobal) {
-      const global = this.oidcGlobalProviderService.resolve();
+      const globalState = this.oidcGlobalProviderService.resolve();
 
-      if (global.status !== 'on') {
+      if (globalState.status !== 'on') {
         throw new Error('Global OIDC provider is not configured');
       }
 
-      return global.provider.clientSecret;
+      return globalState.provider.clientSecret;
     }
 
     return this.secretEncryptionService.decryptVersionedOrThrow(

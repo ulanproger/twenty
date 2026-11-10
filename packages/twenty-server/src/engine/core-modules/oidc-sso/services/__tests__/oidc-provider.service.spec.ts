@@ -5,12 +5,16 @@ import { OidcSsoException } from 'src/engine/core-modules/oidc-sso/oidc-sso.exce
 import { type OidcGlobalProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-global-provider.service';
 import { type OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
+import {
+  type OidcGlobalProvider,
+  type ReadOidcGlobalProviderResult,
+} from 'src/engine/core-modules/oidc-sso/utils/read-oidc-global-provider.util';
 import { type SecretEncryptionService } from 'src/engine/core-modules/secret-encryption/secret-encryption.service';
 import { type TwentyConfigService } from 'src/engine/core-modules/twenty-config/twenty-config.service';
 
 const WORKSPACE_ID = 'c2a0f5d2-3a54-4b7e-9d6c-1f0e8a7b6c5d';
 
-const globalProvider = {
+const globalProvider: OidcGlobalProvider = {
   id: OIDC_GLOBAL_PROVIDER_ID,
   name: 'Rauthy',
   issuer: 'https://idp.example.com/auth/v1',
@@ -18,7 +22,10 @@ const globalProvider = {
   clientSecret: 'global-secret',
 };
 
-const onState = { status: 'on', provider: globalProvider };
+const onState: ReadOidcGlobalProviderResult = {
+  status: 'on',
+  provider: globalProvider,
+};
 
 const input = {
   workspaceId: 'workspace-a',
@@ -47,7 +54,7 @@ const buildService = ({
   saveError?: Error;
   stored?: Record<string, unknown> | null;
   deleteAffected?: number;
-  globalState?: { status: string; provider?: typeof globalProvider };
+  globalState?: ReadOidcGlobalProviderResult;
   globalLoginProvider?: object | null;
 } = {}) => {
   const repository = {
@@ -322,7 +329,7 @@ describe('OidcProviderService', () => {
   });
 
   describe('with a broken global setup', () => {
-    const brokenState = { status: 'incomplete' };
+    const brokenState: ReadOidcGlobalProviderResult = { status: 'incomplete' };
 
     it('offers no sign-in and ignores stored providers', async () => {
       const { service, repository } = buildService({

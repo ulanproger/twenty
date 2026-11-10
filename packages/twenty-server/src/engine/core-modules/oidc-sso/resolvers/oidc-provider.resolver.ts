@@ -57,11 +57,11 @@ export class OidcProviderResolver {
   async oidcProviders(
     @AuthWorkspace() { id: workspaceId }: WorkspaceEntity,
   ): Promise<OidcProviderDTO[]> {
-    const global = this.oidcGlobalProviderService.resolve();
+    const globalState = this.oidcGlobalProviderService.resolve();
 
-    if (global.status !== 'off') {
-      return global.status === 'on'
-        ? [toOidcGlobalProviderDTO(global.provider)]
+    if (globalState.status !== 'off') {
+      return globalState.status === 'on'
+        ? [toOidcGlobalProviderDTO(globalState.provider)]
         : [];
     }
 

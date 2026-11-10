@@ -20,7 +20,8 @@ export type ReadOidcGlobalProviderResult =
   | { status: 'invalid-issuer' }
   | { status: 'on'; provider: OidcGlobalProvider };
 
-// Issuer, client id and secret must all be set; a partial setup or a bad issuer counts as off so a typo cannot half-enable it.
+// 'off' only when none of the three is set. A partial setup or a bad issuer is reported
+// as broken, so a typo cannot hand sign-in back to stored providers.
 export const readOidcGlobalProvider = ({
   issuer,
   clientId,

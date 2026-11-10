@@ -21,9 +21,9 @@ type OidcGlobalProviderProblem = Exclude<
 
 const PROBLEM_WARNINGS: Record<OidcGlobalProviderProblem, string> = {
   incomplete:
-    'OIDC_ISSUER, OIDC_CLIENT_ID and OIDC_CLIENT_SECRET must all be set, OIDC sign-in is disabled until they are',
+    'OIDC_ISSUER, OIDC_CLIENT_ID and OIDC_CLIENT_SECRET must all be set. Single sign-on through OIDC and per-workspace OIDC setup stay disabled until they are',
   'invalid-issuer':
-    'OIDC_ISSUER is not a valid https URL, OIDC sign-in is disabled until it is fixed',
+    'OIDC_ISSUER is not a valid https URL. Single sign-on through OIDC and per-workspace OIDC setup stay disabled until it is fixed',
 };
 
 @Injectable()
@@ -37,8 +37,6 @@ export class OidcGlobalProviderService {
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
   ) {}
 
-  // Any of the three variables set means the platform manages OIDC: stored providers are ignored
-  // when the setup is complete and unusable (not revived) when it is broken.
   resolve(): ReadOidcGlobalProviderResult {
     const result = readOidcGlobalProvider({
       issuer: this.twentyConfigService.get('OIDC_ISSUER'),
@@ -50,11 +48,9 @@ export class OidcGlobalProviderService {
         NodeEnvironment.DEVELOPMENT,
     });
 
-    // Warns once per kind of misconfiguration and re-arms after a good or an empty setup.
+    // One warning per kind of problem, repeated only after the setup was fixed and broken again.
     const problem =
-      result.status === 'incomplete' || result.status === 'invalid-issuer'
-        ? result.status
-        : null;
+      result.status === 'on' || result.status === 'off' ? null : result.status;
 
     if (problem !== this.lastWarnedProblem) {
       this.lastWarnedProblem = problem;
