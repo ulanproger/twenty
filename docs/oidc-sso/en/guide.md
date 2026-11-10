@@ -65,7 +65,7 @@ OIDC_NAME=Company sign-in   # optional, "OIDC" by default
 ```
 
 - One client and one redirect URI in the IdP are enough: `https://<your-address>/auth/oidc-sso/callback`.
-- The provider turns on only when the issuer, client id and client secret are all set and the issuer is valid (`https` in production). Otherwise nothing changes and the log gets a warning.
+- The provider works only when the issuer, client id and client secret are all set and the issuer is valid (`https` in production). If at least one of the three is set but the setup is incomplete or the issuer is invalid, OIDC sign-in is disabled everywhere: no button, per-workspace setup stays off too, and the log gets a warning. Stored workspace providers do not come back to life. To return to per-workspace setup, remove all three variables.
 - While it is on, the sign-in page of every workspace shows one button named `OIDC_NAME`, and per-workspace setup is switched off: Settings, Security shows it read-only, and create, update and delete are rejected.
 - Providers created earlier in workspaces are not deleted but are not used. Remove the variables and they work again.
 - The provider is available in every workspace of the instance: there is no per-workspace switch (workspaces have no SSO flag). The only check on a workspace is membership, an invitation or an approved email domain. Access rules are the same as before: a new user signs in by invitation only, `email_verified` is required. The secret comes from the environment and never reaches the interface.

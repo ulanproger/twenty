@@ -2,7 +2,7 @@ import { QueryFailedError } from 'typeorm';
 
 import { OIDC_GLOBAL_PROVIDER_ID } from 'src/engine/core-modules/oidc-sso/constants/oidc-global-provider-id.constant';
 import { OidcSsoException } from 'src/engine/core-modules/oidc-sso/oidc-sso.exception';
-import { OidcGlobalProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-global-provider.service';
+import { type OidcGlobalProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-global-provider.service';
 import { type OidcProtocolService } from 'src/engine/core-modules/oidc-sso/services/oidc-protocol.service';
 import { OidcProviderService } from 'src/engine/core-modules/oidc-sso/services/oidc-provider.service';
 import { type SecretEncryptionService } from 'src/engine/core-modules/secret-encryption/secret-encryption.service';
@@ -10,12 +10,15 @@ import { type TwentyConfigService } from 'src/engine/core-modules/twenty-config/
 
 const WORKSPACE_ID = 'c2a0f5d2-3a54-4b7e-9d6c-1f0e8a7b6c5d';
 
-const globalEnv: Record<string, string> = {
-  OIDC_ISSUER: 'https://idp.example.com/auth/v1',
-  OIDC_CLIENT_ID: 'global-client',
-  OIDC_CLIENT_SECRET: 'global-secret',
-  OIDC_NAME: 'Rauthy',
+const globalProvider = {
+  id: OIDC_GLOBAL_PROVIDER_ID,
+  name: 'Rauthy',
+  issuer: 'https://idp.example.com/auth/v1',
+  clientId: 'global-client',
+  clientSecret: 'global-secret',
 };
+
+const onState = { status: 'on', provider: globalProvider };
 
 const input = {
   workspaceId: 'workspace-a',
@@ -36,16 +39,16 @@ const buildService = ({
     status: 'active',
   },
   deleteAffected = 1,
-  globalEnv = {},
-  workspace = { id: WORKSPACE_ID },
+  globalState = { status: 'off' },
+  globalLoginProvider = null,
 }: {
   nodeEnv?: string;
   discoveryError?: Error;
   saveError?: Error;
   stored?: Record<string, unknown> | null;
   deleteAffected?: number;
-  globalEnv?: Record<string, string>;
-  workspace?: { id: string } | null;
+  globalState?: { status: string; provider?: typeof globalProvider };
+  globalLoginProvider?: object | null;
 } = {}) => {
   const repository = {
     create: jest.fn((value) => value),
@@ -70,32 +73,23 @@ const buildService = ({
   const encryption = {
     encryptVersioned: jest.fn((plaintext: string) => `enc:v2:${plaintext}`),
   };
-  const workspaceRepository = {
-    findOne: jest.fn().mockResolvedValue(workspace),
+  const config = { get: jest.fn(() => nodeEnv) };
+  const globalProviderService = {
+    resolve: jest.fn(() => globalState),
+    findLoginProvider: jest.fn().mockResolvedValue(globalLoginProvider),
   };
-  const config = {
-    get: jest.fn<string | undefined, [string]>((key) =>
-      key === 'NODE_ENV' ? nodeEnv : globalEnv[key],
-    ),
-  };
-
-  const globalProviderService = new OidcGlobalProviderService(
-    config as unknown as TwentyConfigService,
-    workspaceRepository as never,
-  );
 
   return {
     repository,
     protocol,
+    globalProviderService,
     service: new OidcProviderService(
       repository as never,
       encryption as unknown as SecretEncryptionService,
       protocol as unknown as OidcProtocolService,
       config as unknown as TwentyConfigService,
-      globalProviderService,
+      globalProviderService as unknown as OidcGlobalProviderService,
     ),
-    workspaceRepository,
-    config,
   };
 };
 
@@ -260,7 +254,7 @@ describe('OidcProviderService', () => {
 
   describe('with a global provider', () => {
     it('lists only the global provider as active for any workspace', async () => {
-      const { service, repository } = buildService({ globalEnv });
+      const { service, repository } = buildService({ globalState: onState });
 
       await expect(
         service.findActiveByWorkspace('workspace-a'),
@@ -271,7 +265,7 @@ describe('OidcProviderService', () => {
     });
 
     it('rejects create, update and delete', async () => {
-      const { service, repository } = buildService({ globalEnv });
+      const { service, repository } = buildService({ globalState: onState });
 
       await expectCode(service.create(input), 'GLOBAL_PROVIDER_ACTIVE');
       await expectCode(
@@ -286,44 +280,24 @@ describe('OidcProviderService', () => {
       expect(repository.delete).not.toHaveBeenCalled();
     });
 
-    it('resolves the global id to the workspace from the login url', async () => {
-      const { service, workspaceRepository } = buildService({ globalEnv });
+    it('hands the global id and the login url workspace to the global service', async () => {
+      const loginProvider = { id: OIDC_GLOBAL_PROVIDER_ID, isGlobal: true };
+      const { service, globalProviderService } = buildService({
+        globalState: onState,
+        globalLoginProvider: loginProvider,
+      });
 
       await expect(
         service.findByIdWithWorkspace(OIDC_GLOBAL_PROVIDER_ID, WORKSPACE_ID),
-      ).resolves.toMatchObject({
-        id: OIDC_GLOBAL_PROVIDER_ID,
-        workspaceId: WORKSPACE_ID,
-        status: 'active',
-        clientId: 'global-client',
-      });
-      expect(workspaceRepository.findOne).toHaveBeenCalledWith({
-        where: { id: WORKSPACE_ID },
-      });
-    });
-
-    it.each([undefined, 'not-a-uuid'])(
-      'refuses the global id without a usable workspace id (%s)',
-      async (workspaceId) => {
-        const { service, workspaceRepository } = buildService({ globalEnv });
-
-        await expect(
-          service.findByIdWithWorkspace(OIDC_GLOBAL_PROVIDER_ID, workspaceId),
-        ).resolves.toBeNull();
-        expect(workspaceRepository.findOne).not.toHaveBeenCalled();
-      },
-    );
-
-    it('refuses an unknown workspace', async () => {
-      const { service } = buildService({ globalEnv, workspace: null });
-
-      await expect(
-        service.findByIdWithWorkspace(OIDC_GLOBAL_PROVIDER_ID, WORKSPACE_ID),
-      ).resolves.toBeNull();
+      ).resolves.toBe(loginProvider);
+      expect(globalProviderService.findLoginProvider).toHaveBeenCalledWith(
+        globalProvider,
+        WORKSPACE_ID,
+      );
     });
 
     it('ignores stored providers while it is on', async () => {
-      const { service, repository } = buildService({ globalEnv });
+      const { service, repository } = buildService({ globalState: onState });
 
       await expect(
         service.findByIdWithWorkspace(
@@ -334,8 +308,8 @@ describe('OidcProviderService', () => {
       expect(repository.findOne).not.toHaveBeenCalled();
     });
 
-    it('returns the plaintext secret from env for the global provider', () => {
-      const { service } = buildService({ globalEnv });
+    it('returns the plaintext secret from the global service for the global provider', () => {
+      const { service } = buildService({ globalState: onState });
 
       expect(
         service.decryptClientSecret({
@@ -344,6 +318,48 @@ describe('OidcProviderService', () => {
           isGlobal: true,
         } as never),
       ).toBe('global-secret');
+    });
+  });
+
+  describe('with a broken global setup', () => {
+    const brokenState = { status: 'incomplete' };
+
+    it('offers no sign-in and ignores stored providers', async () => {
+      const { service, repository } = buildService({
+        globalState: brokenState,
+      });
+
+      await expect(
+        service.findActiveByWorkspace('workspace-a'),
+      ).resolves.toEqual([]);
+      await expect(
+        service.findByIdWithWorkspace(
+          '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d',
+          WORKSPACE_ID,
+        ),
+      ).resolves.toBeNull();
+      await expect(
+        service.findByIdWithWorkspace(OIDC_GLOBAL_PROVIDER_ID, WORKSPACE_ID),
+      ).resolves.toBeNull();
+      expect(repository.find).not.toHaveBeenCalled();
+      expect(repository.findOne).not.toHaveBeenCalled();
+    });
+
+    it('rejects create, update and delete like a working setup', async () => {
+      const { service, repository } = buildService({
+        globalState: brokenState,
+      });
+
+      await expectCode(service.create(input), 'GLOBAL_PROVIDER_ACTIVE');
+      await expectCode(
+        service.update({ workspaceId: 'workspace-a', id: 'p1', name: 'New' }),
+        'GLOBAL_PROVIDER_ACTIVE',
+      );
+      await expectCode(
+        service.delete({ workspaceId: 'workspace-a', id: 'p1' }),
+        'GLOBAL_PROVIDER_ACTIVE',
+      );
+      expect(repository.save).not.toHaveBeenCalled();
     });
   });
 

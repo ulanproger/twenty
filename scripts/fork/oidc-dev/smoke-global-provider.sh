@@ -15,6 +15,7 @@ ORIGIN_B=${ORIGIN_B:-http://yc.localhost:3001}
 EMAIL_A=${EMAIL_A:-aaron.munoz185@apple.dev}
 # EMAIL_A must be a member of workspace A only, EMAIL_B a member of workspace B.
 EMAIL_B=${EMAIL_B:-jane.austen@apple.dev}
+# Same value as OIDC_GLOBAL_PROVIDER_ID in oidc-sso/constants/oidc-global-provider-id.constant.ts
 GLOBAL_ID=00000000-0000-4000-8000-000000000001
 
 failures=0

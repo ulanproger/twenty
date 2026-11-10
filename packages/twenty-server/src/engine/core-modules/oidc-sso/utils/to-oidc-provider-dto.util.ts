@@ -1,6 +1,6 @@
 import { type OidcProviderDTO } from 'src/engine/core-modules/oidc-sso/dtos/oidc-provider.dto';
-import { type OidcGlobalProvider } from 'src/engine/core-modules/oidc-sso/utils/read-oidc-global-provider.util';
 import { type WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
+import { type OidcGlobalProvider } from 'src/engine/core-modules/oidc-sso/utils/read-oidc-global-provider.util';
 
 // Picks fields explicitly so the encrypted client secret can never leak by spread.
 export const toOidcProviderDTO = ({
@@ -25,7 +25,7 @@ export const toOidcProviderDTO = ({
 // The global provider has no row, so it reports the process start instead of a new time on every query.
 const OIDC_GLOBAL_PROVIDER_TIMESTAMP = new Date();
 
-export const toGlobalOidcProviderDTO = ({
+export const toOidcGlobalProviderDTO = ({
   id,
   name,
   issuer,

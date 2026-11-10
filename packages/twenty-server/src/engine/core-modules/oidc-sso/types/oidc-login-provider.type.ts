@@ -15,7 +15,7 @@ export type OidcLoginProvider =
         isGlobal: false;
       });
 
-export type GlobalOidcLoginProvider = Extract<
+export type OidcGlobalLoginProvider = Extract<
   OidcLoginProvider,
   { isGlobal: true }
 >;

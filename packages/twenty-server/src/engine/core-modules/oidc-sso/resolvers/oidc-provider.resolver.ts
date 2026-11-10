@@ -12,7 +12,7 @@ import { DeleteOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/d
 import { OidcProviderDTO } from 'src/engine/core-modules/oidc-sso/dtos/oidc-provider.dto';
 import { UpdateOidcProviderInput } from 'src/engine/core-modules/oidc-sso/dtos/update-oidc-provider.input';
 import {
-  toGlobalOidcProviderDTO,
+  toOidcGlobalProviderDTO,
   toOidcProviderDTO,
 } from 'src/engine/core-modules/oidc-sso/utils/to-oidc-provider-dto.util';
 import { OidcSsoGraphqlApiExceptionFilter } from 'src/engine/core-modules/oidc-sso/filters/oidc-sso-graphql-api-exception.filter';
@@ -57,10 +57,12 @@ export class OidcProviderResolver {
   async oidcProviders(
     @AuthWorkspace() { id: workspaceId }: WorkspaceEntity,
   ): Promise<OidcProviderDTO[]> {
-    const globalProvider = this.oidcGlobalProviderService.get();
+    const global = this.oidcGlobalProviderService.resolve();
 
-    if (globalProvider !== null) {
-      return [toGlobalOidcProviderDTO(globalProvider)];
+    if (global.status !== 'off') {
+      return global.status === 'on'
+        ? [toOidcGlobalProviderDTO(global.provider)]
+        : [];
     }
 
     const providers =

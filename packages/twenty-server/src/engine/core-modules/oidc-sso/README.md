@@ -52,7 +52,7 @@ Last sync (2026-11-05, details in section 9 of `docs/oidc-sso-roadmap.md`): upst
 
 ## Global provider
 
-When `OIDC_ISSUER`, `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` are all set (and the issuer is a valid https URL), one provider from env serves every workspace and per-workspace setup is switched off: create, update and delete fail with `GLOBAL_PROVIDER_ACTIVE`, stored providers are ignored (not deleted). The provider has a fixed id (`OIDC_GLOBAL_PROVIDER_ID`) and no workspace of its own, so its login URL carries `?workspaceId=` and the controller keeps it in the session login; for stored providers that parameter is ignored. `OidcGlobalProviderService.get()` is the single place that reads the env; `OidcProviderService` stays the stored-provider service and only dispatches to it.
+Any of `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` set means the platform manages OIDC (`OidcGlobalProviderService.resolve()` returns `on`, `incomplete` or `invalid-issuer`; `off` only when none is set). With a complete setup (and a valid https issuer) one provider from env serves every workspace. With a broken one OIDC sign-in is disabled (fail closed). In both cases create, update and delete of stored providers fail with `GLOBAL_PROVIDER_ACTIVE` and stored providers are ignored, not deleted, so a typo cannot revive them. The provider has a fixed id (`OIDC_GLOBAL_PROVIDER_ID`) and no workspace of its own, so its login URL carries `?workspaceId=` and the controller keeps it in the session login; for stored providers that parameter is ignored. `OidcGlobalProviderService` is the single place that reads the env (variables are `isEnvOnly`); `OidcProviderService` stays the stored-provider service and only dispatches to it.
 
 ## Database
 

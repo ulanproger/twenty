@@ -1,7 +1,7 @@
 import { OIDC_GLOBAL_PROVIDER_ID } from 'src/engine/core-modules/oidc-sso/constants/oidc-global-provider-id.constant';
 import { type WorkspaceOidcProviderEntity } from 'src/engine/core-modules/oidc-sso/entities/workspace-oidc-provider.entity';
 import {
-  toGlobalOidcProviderDTO,
+  toOidcGlobalProviderDTO,
   toOidcProviderDTO,
 } from 'src/engine/core-modules/oidc-sso/utils/to-oidc-provider-dto.util';
 
@@ -33,7 +33,7 @@ describe('toOidcProviderDTO', () => {
   });
 });
 
-describe('toGlobalOidcProviderDTO', () => {
+describe('toOidcGlobalProviderDTO', () => {
   const globalProvider = {
     id: OIDC_GLOBAL_PROVIDER_ID,
     name: 'Rauthy',
@@ -43,15 +43,15 @@ describe('toGlobalOidcProviderDTO', () => {
   } as const;
 
   it('is marked global and never carries the secret', () => {
-    const dto = toGlobalOidcProviderDTO(globalProvider);
+    const dto = toOidcGlobalProviderDTO(globalProvider);
 
     expect(dto).toMatchObject({ isGlobal: true, status: 'active' });
     expect(JSON.stringify(dto)).not.toContain('secret-1');
   });
 
   it('reports the same timestamps on every call', () => {
-    expect(toGlobalOidcProviderDTO(globalProvider).createdAt).toBe(
-      toGlobalOidcProviderDTO(globalProvider).createdAt,
+    expect(toOidcGlobalProviderDTO(globalProvider).createdAt).toBe(
+      toOidcGlobalProviderDTO(globalProvider).createdAt,
     );
   });
 });

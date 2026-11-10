@@ -66,52 +66,49 @@ export const SettingsOidcProviderRowMenu = ({
     }
   };
 
-  if (provider.isGlobal) {
-    return (
-      <StyledRowRight>
-        <Status color="green" weight="medium">
-          {t`Active`}
-        </Status>
-      </StyledRowRight>
-    );
-  }
-
   return (
     <StyledRowRight>
       <Status color={isActive ? 'green' : 'gray'} weight="medium">
         {isActive ? t`Active` : t`Inactive`}
       </Status>
-      <DropdownRoot type="menu" dropdownId={`oidc-provider-row-${provider.id}`}>
-        <Dropdown.Trigger
-          render={
-            <LightIconButton emphasis="subtle" aria-label={t`More options`}>
-              <IconDotsVertical />
-            </LightIconButton>
-          }
-        />
-        <DropdownContent side="right" align="start">
-          <Dropdown.Section>
-            <Dropdown.ActionItem
-              startIcon={<IconArchive />}
-              onClick={toggleStatus}
-            >
-              {isActive ? t`Deactivate` : t`Activate`}
-            </Dropdown.ActionItem>
-            <Dropdown.ActionItem
-              color="danger"
-              startIcon={<IconTrash />}
-              onClick={() => openDialog(deleteDialogId)}
-            >{t`Delete`}</Dropdown.ActionItem>
-          </Dropdown.Section>
-        </DropdownContent>
-      </DropdownRoot>
-      <ConfirmationDialog
-        dialogId={deleteDialogId}
-        title={t`Delete OIDC provider`}
-        subtitle={t`Users will no longer be able to sign in through ${provider.name}.`}
-        onConfirmClick={handleDelete}
-        confirmButtonText={t`Delete`}
-      />
+      {!provider.isGlobal && (
+        <>
+          <DropdownRoot
+            type="menu"
+            dropdownId={`oidc-provider-row-${provider.id}`}
+          >
+            <Dropdown.Trigger
+              render={
+                <LightIconButton emphasis="subtle" aria-label={t`More options`}>
+                  <IconDotsVertical />
+                </LightIconButton>
+              }
+            />
+            <DropdownContent side="right" align="start">
+              <Dropdown.Section>
+                <Dropdown.ActionItem
+                  startIcon={<IconArchive />}
+                  onClick={toggleStatus}
+                >
+                  {isActive ? t`Deactivate` : t`Activate`}
+                </Dropdown.ActionItem>
+                <Dropdown.ActionItem
+                  color="danger"
+                  startIcon={<IconTrash />}
+                  onClick={() => openDialog(deleteDialogId)}
+                >{t`Delete`}</Dropdown.ActionItem>
+              </Dropdown.Section>
+            </DropdownContent>
+          </DropdownRoot>
+          <ConfirmationDialog
+            dialogId={deleteDialogId}
+            title={t`Delete OIDC provider`}
+            subtitle={t`Users will no longer be able to sign in through ${provider.name}.`}
+            onConfirmClick={handleDelete}
+            confirmButtonText={t`Delete`}
+          />
+        </>
+      )}
     </StyledRowRight>
   );
 };

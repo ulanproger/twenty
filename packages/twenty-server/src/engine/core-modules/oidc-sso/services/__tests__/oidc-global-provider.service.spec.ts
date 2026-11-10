@@ -40,27 +40,35 @@ const buildService = ({
 };
 
 describe('OidcGlobalProviderService', () => {
-  describe('get', () => {
+  describe('resolve', () => {
     it('returns the provider when everything is set', () => {
-      expect(buildService().service.get()).toMatchObject({
-        id: OIDC_GLOBAL_PROVIDER_ID,
-        name: 'Rauthy',
-        clientId: 'global-client',
+      expect(buildService().service.resolve()).toMatchObject({
+        status: 'on',
+        provider: {
+          id: OIDC_GLOBAL_PROVIDER_ID,
+          name: 'Rauthy',
+          clientId: 'global-client',
+        },
       });
     });
 
-    it('stays off without variables, with only part of them or with a bad issuer', () => {
-      expect(buildService({ env: {} }).service.get()).toBeNull();
+    it('is off only when none of the variables is set', () => {
+      expect(buildService({ env: {} }).service.resolve()).toEqual({
+        status: 'off',
+      });
+    });
+
+    it('is broken, not off, when the setup is partial or the issuer is bad', () => {
       expect(
         buildService({
           env: { OIDC_ISSUER: completeEnv.OIDC_ISSUER },
-        }).service.get(),
-      ).toBeNull();
+        }).service.resolve(),
+      ).toEqual({ status: 'incomplete' });
       expect(
         buildService({
           env: { ...completeEnv, OIDC_ISSUER: 'http://idp.example.com' },
-        }).service.get(),
-      ).toBeNull();
+        }).service.resolve(),
+      ).toEqual({ status: 'invalid-issuer' });
     });
 
     it('warns once per kind of misconfiguration and again after it was fixed', () => {
@@ -69,20 +77,20 @@ describe('OidcGlobalProviderService', () => {
         env: { OIDC_ISSUER: completeEnv.OIDC_ISSUER },
       });
 
-      service.get();
-      service.get();
+      service.resolve();
+      service.resolve();
       expect(warn).toHaveBeenCalledTimes(1);
       expect(warn).toHaveBeenLastCalledWith(
         expect.stringContaining('must all be set'),
       );
 
       config.get.mockImplementation((key: string) => completeEnv[key]);
-      expect(service.get()).not.toBeNull();
+      expect(service.resolve().status).toBe('on');
 
       config.get.mockImplementation(
         (key: string) => ({ ...completeEnv, OIDC_ISSUER: 'not a url' })[key],
       );
-      service.get();
+      service.resolve();
       expect(warn).toHaveBeenCalledTimes(2);
       expect(warn).toHaveBeenLastCalledWith(
         expect.stringContaining('not a valid https URL'),
@@ -94,7 +102,7 @@ describe('OidcGlobalProviderService', () => {
     it('does not warn when nothing is configured', () => {
       const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
 
-      buildService({ env: {} }).service.get();
+      buildService({ env: {} }).service.resolve();
 
       expect(warn).not.toHaveBeenCalled();
       warn.mockRestore();
@@ -102,10 +110,20 @@ describe('OidcGlobalProviderService', () => {
   });
 
   describe('findLoginProvider', () => {
+    const globalProvider = {
+      id: OIDC_GLOBAL_PROVIDER_ID,
+      name: 'Rauthy',
+      issuer: 'https://idp.example.com/auth/v1',
+      clientId: 'global-client',
+      clientSecret: 'global-secret',
+    } as const;
+
     it('binds the provider to the workspace of the login url', async () => {
       const { service, workspaceRepository } = buildService();
 
-      await expect(service.findLoginProvider(WORKSPACE_ID)).resolves.toEqual(
+      await expect(
+        service.findLoginProvider(globalProvider, WORKSPACE_ID),
+      ).resolves.toEqual(
         expect.objectContaining({
           id: OIDC_GLOBAL_PROVIDER_ID,
           workspaceId: WORKSPACE_ID,
@@ -119,8 +137,10 @@ describe('OidcGlobalProviderService', () => {
     });
 
     it('never carries the secret', async () => {
-      const provider =
-        await buildService().service.findLoginProvider(WORKSPACE_ID);
+      const provider = await buildService().service.findLoginProvider(
+        globalProvider,
+        WORKSPACE_ID,
+      );
 
       expect(JSON.stringify(provider)).not.toContain('global-secret');
     });
@@ -131,7 +151,7 @@ describe('OidcGlobalProviderService', () => {
         const { service, workspaceRepository } = buildService();
 
         await expect(
-          service.findLoginProvider(workspaceId),
+          service.findLoginProvider(globalProvider, workspaceId),
         ).resolves.toBeNull();
         expect(workspaceRepository.findOne).not.toHaveBeenCalled();
       },
@@ -140,14 +160,9 @@ describe('OidcGlobalProviderService', () => {
     it('refuses an unknown workspace', async () => {
       const { service } = buildService({ workspace: null });
 
-      await expect(service.findLoginProvider(WORKSPACE_ID)).resolves.toBeNull();
-    });
-
-    it('returns nothing while the provider is off', async () => {
-      const { service, workspaceRepository } = buildService({ env: {} });
-
-      await expect(service.findLoginProvider(WORKSPACE_ID)).resolves.toBeNull();
-      expect(workspaceRepository.findOne).not.toHaveBeenCalled();
+      await expect(
+        service.findLoginProvider(globalProvider, WORKSPACE_ID),
+      ).resolves.toBeNull();
     });
   });
 });
