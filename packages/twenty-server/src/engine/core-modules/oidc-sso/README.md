@@ -48,7 +48,7 @@ S6 (`SignInUpWorkspaceScopeFormEffect.tsx`, `useHasMultipleAuthMethods.ts`) is n
    `-u` accepts any drift, so afterwards confirm our entries survived: `grep -c -E '"(OidcProviderResolver|OidcSsoAuthController|PublicOidcProviderResolver)\.'` on the snapshot must print 7 (4 resolver operations, 2 controller routes, 1 public query), and read the snapshot `git diff`.
 6. After the sync reached the default branch, run `bash scripts/fork/upstream-workflows.sh status`: workflows that arrive from upstream are enabled. It lists every workflow that can start on its own (most are already disabled, the list is long) and exits 1 only if one of them is still enabled, that exit code is the signal. `disable` turns the enabled ones off in GitHub, `enable` reverses it (it also re-enables ones disabled by hand). Our `fork-build-ghcr-image.yaml` and the workflows that only run by hand or are called by others stay as they are.
 
-Last sync (2026-11-05, details in section 9 of `docs/oidc-sso-roadmap.md`): upstream #29661 replaced the old guards with `AccessPolicyGuard`, so `oidc-provider.resolver.ts` was ported. Use the Node version upstream requires (`engines` in `package.json`).
+Last sync (2026-11-10, tag `twenty/v2.57.1`, details in section 10 of `docs/oidc-sso-roadmap.md`): a clean merge, no seam or module code had to change, the S7 snapshot merged without drift. Sync before that (2026-11-05, section 9): upstream #29661 replaced the old guards with `AccessPolicyGuard`, so `oidc-provider.resolver.ts` was ported. Use the Node version upstream requires (`engines` in `package.json`).
 
 ## Global provider
 
