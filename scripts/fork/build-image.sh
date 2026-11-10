@@ -4,13 +4,14 @@
 # By default it builds only the native platform of this machine. Building a foreign platform
 # under emulation fails for this image (lingui extract hits the 10 s worker init timeout of the
 # threads library), so build each platform on a machine of its own architecture and join the tags:
-#   docker buildx imagetools create -t IMAGE:sha-X IMAGE:sha-X-amd64 IMAGE:sha-X-arm64
+#   docker buildx imagetools create -t IMAGE:V-X -t IMAGE:V IMAGE:V-X-amd64 IMAGE:V-X-arm64
+# where V is TWENTY_CURRENT_VERSION and X the first 10 chars of the commit.
 #
 # Usage: build-image.sh [options]
 #   --push                 publish the image (default: write an OCI archive only)
 #   --platforms LIST       default: the native platform of this machine, e.g. linux/amd64
 #   --image NAME           default ghcr.io/ulanproger/twenty (no tag)
-#   --tag TAG              default sha-<first 10 chars of HEAD>-<arch> for one platform, sha-<...> for several
+#   --tag TAG              default <version>-<first 10 chars of HEAD>-<arch> for one platform, <version>-<...> plus a floating <version> tag for several
 #   --output-dir DIR       where the archive and the log go, outside the checkout (default ~/twenty-image-output)
 #   --allow-emulation      build a foreign platform anyway (see above, expect it to fail)
 #   --install-emulation    with --allow-emulation: install QEMU handlers (runs a privileged container)
@@ -104,17 +105,18 @@ case "${IMAGE##*/}" in
   *:*) fail "--image must not contain a tag ('$IMAGE'), use --tag" ;;
 esac
 
+VERSION="$(sed -n "s/.*TWENTY_CURRENT_VERSION = '\([^']*\)'.*/\1/p" "$VERSION_FILE")"
+[ -n "$VERSION" ] || fail "could not read TWENTY_CURRENT_VERSION from $VERSION_FILE"
+
 SHA10="$(git rev-parse --short=10 HEAD)"
+FLOATING_TAG=""
 if [ -z "$TAG" ]; then
   case "$PLATFORMS" in
-    *,*) TAG="sha-$SHA10" ;;
-    *) suffix="${PLATFORMS#linux/}"; TAG="sha-$SHA10-${suffix//\//-}" ;;
+    *,*) TAG="$VERSION-$SHA10"; FLOATING_TAG="$VERSION" ;;
+    *) suffix="${PLATFORMS#linux/}"; TAG="$VERSION-$SHA10-${suffix//\//-}" ;;
   esac
 fi
 [[ "$TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]] || fail "invalid tag '$TAG'"
-
-VERSION="$(sed -n "s/.*TWENTY_CURRENT_VERSION = '\([^']*\)'.*/\1/p" "$VERSION_FILE")"
-[ -n "$VERSION" ] || fail "could not read TWENTY_CURRENT_VERSION from $VERSION_FILE"
 
 # The reason this script exists: without this call a database that already finished its version never gets the OIDC table.
 grep -Fq "command:prod run-instance-commands" packages/twenty-docker/twenty/entrypoint.sh \
@@ -132,6 +134,7 @@ branch="$(git rev-parse --abbrev-ref HEAD)"
 echo "commit:     $SHA10 ($branch)"
 echo "version:    $VERSION"
 echo "image:      $IMAGE:$TAG"
+[ -z "$FLOATING_TAG" ] || [ "$push" = "0" ] || echo "floating:   $IMAGE:$FLOATING_TAG (moved by --push)"
 echo "platforms:  $PLATFORMS"
 
 free_disk_gb() {
@@ -190,6 +193,7 @@ archive="$OUTPUT_DIR/twenty-$TAG.oci.tar"
 log="$OUTPUT_DIR/build-$TAG.log"
 if [ "$push" = "1" ]; then
   output=(--push --tag "$IMAGE:$TAG")
+  [ -z "$FLOATING_TAG" ] || output+=(--tag "$IMAGE:$FLOATING_TAG")
 else
   output=(--output "type=oci,dest=$archive,name=$IMAGE:$TAG")
 fi
