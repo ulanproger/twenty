@@ -82,7 +82,7 @@ OIDC_NAME=Company sign-in   # optional, "OIDC" by default
 
 ## FAQ
 
-**The sign-in button does not appear.** The provider must be Active and the page must be opened from the address of that workspace.
+**The sign-in button does not appear.** The provider must be Active and the page must be opened from the address of that workspace. If at least one `OIDC_*` variable is set on the server, check that all three are set and the Issuer is valid (see [one provider for the whole platform](#one-provider-for-the-whole-platform)): with an incomplete setup there is no button and the log has a warning.
 
 **Sign-in ends with "Single sign-on authentication failed".** This is a generic text, the reason is in the server log. See [troubleshooting](reference.md#troubleshooting).
 
