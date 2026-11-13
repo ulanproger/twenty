@@ -1489,7 +1489,19 @@ describe('Application export - data model', () => {
       });
 
       expect(dryRun.errors).toBeUndefined();
-      expect(dryRun.data.syncApplication.actions).toEqual([]);
+      // TODO(@charlesBochet): expect no action once the export declares rules, a re-sync moves the object grant onto the rule
+      expect(dryRun.data.syncApplication.actions).toMatchObject([
+        {
+          metadataName: 'objectPermission',
+          type: 'update',
+          update: { canReadObjectRecords: false },
+        },
+        {
+          metadataName: 'rowLevelPermissionRule',
+          type: 'update',
+          update: { canReadRecords: true },
+        },
+      ]);
 
       const deletionInferringDryRun = await syncApplication({
         manifest: data.exportApplication.manifest,
@@ -2064,7 +2076,6 @@ describe('Application export - workflows built in the workflow builder', () => {
       trigger: {
         name: 'Launch manually',
         type: 'MANUAL',
-        position: { x: 0, y: 0 },
         settings: {
           availability: { type: 'GLOBAL' },
           outputSchema: {},

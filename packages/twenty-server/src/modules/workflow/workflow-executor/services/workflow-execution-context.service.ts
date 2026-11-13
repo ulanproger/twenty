@@ -68,8 +68,8 @@ export class WorkflowExecutionContextService {
     ]);
 
     if (
-      this.getRunApplicationId(workflowRun, flatWorkflowMaps) ===
-      workspace.workspaceCustomApplicationId
+      this.getRunWorkflowOrThrow({ workflowRun, flatWorkflowMaps })
+        .applicationId === workspace.workspaceCustomApplicationId
     ) {
       return null;
     }
@@ -111,15 +111,27 @@ export class WorkflowExecutionContextService {
     workflowRun: WorkflowRunWorkspaceEntity,
     workspace: FlatWorkspace,
   ): Promise<WorkflowExecutionContext> {
-    const { flatApplicationMaps, flatWorkflowMaps } =
-      await this.workspaceCacheService.getOrRecompute(workspace.id, [
-        'flatApplicationMaps',
-        'flatWorkflowMaps',
-      ]);
+    const {
+      flatApplicationMaps,
+      flatWorkflowMaps,
+      flatRoleTargetByApplicationIdMaps,
+    } = await this.workspaceCacheService.getOrRecompute(workspace.id, [
+      'flatApplicationMaps',
+      'flatWorkflowMaps',
+      'flatRoleTargetByApplicationIdMaps',
+    ]);
+
+    const workflow = this.getRunWorkflowOrThrow({
+      workflowRun,
+      flatWorkflowMaps,
+    });
 
     const application = resolveWorkflowRunApplicationOrThrow({
-      applicationId: this.getRunApplicationId(workflowRun, flatWorkflowMaps),
+      applicationId: workflow.applicationId,
       applicationsById: flatApplicationMaps.byId,
+      workspaceId: workspace.id,
+      workspaceCustomApplicationId: workspace.workspaceCustomApplicationId,
+      flatRoleTargetByApplicationIdMaps,
     });
 
     const isActingOnBehalfOfUser =
@@ -150,15 +162,18 @@ export class WorkflowExecutionContextService {
       initiator: workflowRun.createdBy,
       authContext,
       application,
-      workflowId:
-        workflowRun.workflowId ?? workflowRun.coreWorkflowId ?? undefined,
+      workflowId: workflow.id,
+      workflowName: workflow.name,
     };
   }
 
-  private getRunApplicationId(
-    workflowRun: Pick<WorkflowRunWorkspaceEntity, 'coreWorkflowId'>,
-    flatWorkflowMaps: FlatEntityMaps<FlatWorkflow>,
-  ): string {
+  private getRunWorkflowOrThrow({
+    workflowRun,
+    flatWorkflowMaps,
+  }: {
+    workflowRun: Pick<WorkflowRunWorkspaceEntity, 'coreWorkflowId'>;
+    flatWorkflowMaps: FlatEntityMaps<FlatWorkflow>;
+  }): FlatWorkflow {
     const workflow = isDefined(workflowRun.coreWorkflowId)
       ? findFlatEntityByIdInFlatEntityMaps({
           flatEntityId: workflowRun.coreWorkflowId,
@@ -173,7 +188,7 @@ export class WorkflowExecutionContextService {
       );
     }
 
-    return workflow.applicationId;
+    return workflow;
   }
 
   private async buildMemberAuthContext({

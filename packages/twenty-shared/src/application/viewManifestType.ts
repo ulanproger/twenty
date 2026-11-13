@@ -25,6 +25,7 @@ export type ViewFieldManifest = SyncableEntityOptions & {
   position: number;
   aggregateOperation?: AggregateOperations;
   viewFieldGroupUniversalIdentifier?: string;
+  isCanonical?: boolean;
 };
 
 export type StandaloneViewFieldManifest = ViewFieldManifest & {
@@ -83,6 +84,7 @@ export type ViewManifest = SyncableEntityOptions & {
   openRecordIn?: ViewOpenRecordIn;
   mainGroupByFieldMetadataUniversalIdentifier?: string;
   shouldHideEmptyGroups?: boolean;
+  shouldDisplayGroupsAsTabs?: boolean;
   groupLoadLimit?: number;
   anyFieldFilterValue?: string | null;
   kanbanColumnWidth?: number | null;
